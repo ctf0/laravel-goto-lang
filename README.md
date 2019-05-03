@@ -2,5 +2,6 @@
 
 
 ### TODO
-- [ ] show config value on hover
-- [ ] scroll/peek directly to the hovered config key
+- [ ] show lang value on hover
+- [ ] support multiple langs
+- [ ] scroll/peek directly to the hovered lang key
