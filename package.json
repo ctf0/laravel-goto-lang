@@ -31,29 +31,17 @@
             "type": "object",
             "title": "Laravel goto lang configuration",
             "properties": {
-                "laravel_goto_lang.folders": {
-                    "type": "object",
-                    "default": {
-                        "en": "/resources/lang/en"
-                    },
+                "laravel_goto_lang.locales": {
+                    "type": "array",
+                    "default": [
+                        "en"
+                    ],
                     "items": {
                         "type": "string"
                     },
                     "minItems": 1,
                     "uniqueItems": true,
-                    "description": "Multiple folders"
-                },
-                "laravel_goto_lang.extensions": {
-                    "type": "object",
-                    "default": {
-                        "default": ".blade.php"
-                    },
-                    "items": {
-                        "type": "string"
-                    },
-                    "minItems": 1,
-                    "uniqueItems": true,
-                    "description": "Multiple extensions"
+                    "description": "Multiple locales"
                 }
             }
         }
@@ -66,10 +54,10 @@
         "test": "node ./node_modules/vscode/bin/test"
     },
     "devDependencies": {
-        "typescript": "^2.0.3",
-        "vscode": "^1.0.0",
-        "mocha": "^2.3.3",
+        "@types/mocha": "^2.2.32",
         "@types/node": "^6.0.40",
-        "@types/mocha": "^2.2.32"
+        "mocha": "^6.1.4",
+        "typescript": "^2.0.3",
+        "vscode": "^1.0.0"
     }
 }
