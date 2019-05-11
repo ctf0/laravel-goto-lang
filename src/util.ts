@@ -12,7 +12,7 @@ export function getFilePaths(text: string, document: TextDocument) {
     let info = text.replace(/\"|\'/g, '');
     let langPath = '/resources/lang'
 
-    if (info.indexOf("::") != -1) {
+    if (info.includes("::")) {
         let searchFor = info.split('::')
         langPath = `${langPath}/vendor/${searchFor[0]}`
         info = searchFor[1]
