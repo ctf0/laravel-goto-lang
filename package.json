@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel goto lang",
     "description": "Quick jump to lang",
-    "version": "0.0.2",
+    "version": "0.0.3",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.19.0"
@@ -38,6 +38,11 @@
                     "minItems": 1,
                     "uniqueItems": true,
                     "description": "Multiple locales"
+                },
+                "laravel_goto_lang.maxLinesCount": {
+                    "type": "integer",
+                    "default": 300,
+                    "description": "stop the extension if the opened file lines count is more than"
                 }
             }
         }
