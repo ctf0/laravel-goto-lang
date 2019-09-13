@@ -4,6 +4,5 @@
 
 ### TODO
 
-- [ ] show lang value on hover
+- [ ] re-do into https://github.com/antfu/vue-i18n-ally
 - [ ] scroll/peek directly to the hovered lang key
-- [ ] have a better "cpu friendly" way to find the files
