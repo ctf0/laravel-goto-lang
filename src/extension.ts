@@ -19,6 +19,16 @@ export function activate(context: ExtensionContext) {
                 )
             }, 250)
         )
+
+        window.onDidChangeVisibleTextEditors(
+            debounce(function (editors) {
+                if (editors.length) {
+                    context.subscriptions.push(
+                        languages.registerDocumentLinkProvider(['php', 'blade'], new LinkProvider())
+                    )
+                }
+            }, 500)
+        )
     }, 2000)
 }
 

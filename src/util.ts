@@ -28,8 +28,8 @@ async function getData(document, path, list) {
         toCheck.push(`**/${fileList.join('/')}.php`)
         fileList.pop()
     }
-    let result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
 
+    let result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
     result = result.map((item) => {
         return {
             "showPath": item,
