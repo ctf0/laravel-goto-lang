@@ -4,5 +4,4 @@
 
 ### TODO
 
-- [ ] re-do into https://github.com/antfu/vue-i18n-ally
 - [ ] scroll/peek directly to the hovered lang key

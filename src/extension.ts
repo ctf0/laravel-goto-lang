@@ -1,14 +1,25 @@
-'use strict';
+'use strict'
 
-import { languages, ExtensionContext } from 'vscode';
-import LinkProvider from './providers/linkProvider';
-import HoverProvider from './providers/hoverProvider';
+import { languages, ExtensionContext, window } from 'vscode'
+import LinkProvider from './providers/linkProvider'
+
+const debounce = require('lodash.debounce')
+
 
 export function activate(context: ExtensionContext) {
-    let hover = languages.registerHoverProvider(['php', 'blade'], new HoverProvider());
-    let link = languages.registerDocumentLinkProvider(['php', 'blade'], new LinkProvider());
+    setTimeout(() => {
+        context.subscriptions.push(
+            languages.registerDocumentLinkProvider(['php', 'blade'], new LinkProvider())
+        )
 
-    context.subscriptions.push(hover, link);
+        window.onDidChangeTextEditorVisibleRanges(
+            debounce(function (e) {
+                context.subscriptions.push(
+                    languages.registerDocumentLinkProvider(['php', 'blade'], new LinkProvider())
+                )
+            }, 250)
+        )
+    }, 2000)
 }
 
 export function deactivate() {

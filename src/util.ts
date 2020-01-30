@@ -1,15 +1,11 @@
-'use strict';
+'use strict'
 
-import { workspace, TextDocument, Uri } from 'vscode';
-import * as fs from "fs";
+import { workspace, TextDocument, Uri } from 'vscode'
 
-export function getFilePath(text: string, document: TextDocument) {
-    let paths = getFilePaths(text, document)
-    return paths.length ? paths[0] : null;
-}
+const glob = require("fast-glob")
 
-export function getFilePaths(text: string, document: TextDocument) {
-    let info = text.replace(/\"|\'/g, '');
+export async function getFilePaths(text: string, document: TextDocument) {
+    let info = text.replace(new RegExp(/(trans|__|@lang)\(['"]|['"]\)/, 'g'), '')
     let langPath = '/resources/lang'
 
     if (info.includes("::")) {
@@ -18,50 +14,28 @@ export function getFilePaths(text: string, document: TextDocument) {
         info = searchFor[1]
     }
 
+
     return getData(document, langPath, info)
 }
 
-function getData(document, path, list) {
-    let workspaceFolder = workspace.getWorkspaceFolder(document.uri).uri.fsPath;
-    let locales = workspace.getConfiguration('laravel_goto_lang').locales;
+async function getData(document, path, list) {
     let fileList = list.split('.')
-    let result = [];
-    let found = null
+    fileList.pop()
 
-    locales.forEach(code => {
-        let whereTo = `${path}/${code}/`
+    let workspaceFolder = workspace.getWorkspaceFolder(document.uri).uri.fsPath
+    let toCheck = []
+    while (fileList.length > 0) {
+        toCheck.push(`**/${fileList.join('/')}.php`)
+        fileList.pop()
+    }
+    let result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
 
-        if (found) {
-            let showPath = `${whereTo}${found}`;
-            let filePath = workspaceFolder + showPath;
-
-            if (fs.existsSync(filePath)) {
-                result.push({
-                    "name": code,
-                    "showPath": showPath,
-                    "fileUri": Uri.file(filePath)
-                });
-            }
-        } else {
-            while (!found) {
-                let join = fileList.join('/');
-                let file = `${join}.php`
-                let showPath = `${whereTo}${file}`;
-                let filePath = workspaceFolder + showPath;
-
-                if (fs.existsSync(filePath)) {
-                    result.push({
-                        "name": code,
-                        "showPath": showPath,
-                        "fileUri": Uri.file(filePath)
-                    });
-                    found = file
-                } else {
-                    fileList.pop();
-                }
-            }
+    result = result.map((item) => {
+        return {
+            "showPath": item,
+            "fileUri": Uri.file(`${workspaceFolder}${path}/${item}`)
         }
-    });
+    })
 
-    return result;
+    return result
 }
