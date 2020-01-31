@@ -5,7 +5,7 @@ import { workspace, TextDocument, Uri } from 'vscode'
 const glob = require("fast-glob")
 
 export async function getFilePaths(text: string, document: TextDocument) {
-    let info = text.replace(new RegExp(/(trans|__|@lang)\(['"]|['"]\)/, 'g'), '')
+    let info = text.match(new RegExp(/['"](.*?)['"]/))[1]
     let langPath = '/resources/lang'
 
     if (info.includes("::")) {
@@ -13,7 +13,6 @@ export async function getFilePaths(text: string, document: TextDocument) {
         langPath = `${langPath}/vendor/${searchFor[0]}`
         info = searchFor[1]
     }
-
 
     return getData(document, langPath, info)
 }

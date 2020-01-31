@@ -4,4 +4,5 @@
 
 ### TODO
 
-- [ ] scroll/peek directly to the hovered lang key
+- [ ] scroll/peek directly to the hovered key
+- [ ] support json
