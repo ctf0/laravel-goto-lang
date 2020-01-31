@@ -1,6 +1,6 @@
 'use strict'
 
-import { workspace, TextDocument, Uri } from 'vscode'
+import { workspace, TextDocument, Uri, env } from 'vscode'
 
 const glob = require("fast-glob")
 
@@ -19,6 +19,7 @@ export async function getFilePaths(text: string, document: TextDocument) {
 
 async function getData(document, path, list) {
     let fileList = list.split('.')
+    let info = fileList.slice(1).join('.')
     fileList.pop()
 
     let workspaceFolder = workspace.getWorkspaceFolder(document.uri).uri.fsPath
@@ -28,11 +29,14 @@ async function getData(document, path, list) {
         fileList.pop()
     }
 
+    let editor = `${env.uriScheme}://file`
     let result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
     result = result.map((item) => {
         return {
             "showPath": item,
-            "fileUri": Uri.file(`${workspaceFolder}${path}/${item}`)
+            fileUri: Uri
+                .parse(`${editor}${workspaceFolder}${path}/${item}?query=${info}`)
+                .with({ authority: 'ctf0.laravel-goto-lang' })
         }
     })
 

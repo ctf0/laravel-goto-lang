@@ -4,5 +4,5 @@
 
 ### TODO
 
-- [ ] scroll/peek directly to the hovered key
+- [ ] show value on hover
 - [ ] support json
