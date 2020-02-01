@@ -20,3 +20,7 @@
 ## 0.0.7
 
 - go to key
+
+## 0.0.8
+
+- add config for methods to search for

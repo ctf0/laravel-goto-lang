@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel goto lang",
     "description": "Quick jump to lang",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.41.0"
@@ -23,7 +23,28 @@
         "onLanguage:blade",
         "onUri"
     ],
-    "contributes": {},
+    "contributes": {
+        "configuration": {
+            "type": "object",
+            "title": "Laravel Goto Lang",
+            "properties": {
+                "laravel-goto-lang.methods": {
+                    "type": "array",
+                    "default": [
+                        "trans",
+                        "__",
+                        "@lang"
+                    ],
+                    "items": {
+                        "type": "string"
+                    },
+                    "minItems": 1,
+                    "uniqueItems": true,
+                    "description": "methods to search for"
+                }
+            }
+        }
+    },
     "main": "./out/src/extension",
     "scripts": {
         "vscode:prepublish": "yarn run compile",
