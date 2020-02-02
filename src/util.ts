@@ -13,7 +13,7 @@ import {
 const glob = require("fast-glob")
 
 export async function getFilePaths(text, document) {
-    let info = text.match(new RegExp(/['"](.*?)['"]/))[1]
+    let info = text.replace(/['"]/g, '')
     let langPath = '/resources/lang'
 
     if (info.includes("::")) {
@@ -43,8 +43,8 @@ async function getData(document, path, list) {
         return {
             "showPath": item,
             fileUri: Uri
-                .parse(`${editor}${workspaceFolder}${path}/${item}?query=${info}`)
-                .with({ authority: 'ctf0.laravel-goto-lang' })
+                .parse(`${editor}${workspaceFolder}${path}/${item}`)
+                .with({ authority: 'ctf0.laravel-goto-lang', query: info })
         }
     })
 
@@ -62,13 +62,13 @@ export function scrollToText() {
                     .then(() => {
                         setTimeout(() => {
                             let editor = window.activeTextEditor
-                            let range = getTextPosition(query.replace('query=', ''), editor.document)
+                            let range = getTextPosition(query, editor.document)
 
                             if (range) {
                                 editor.selection = new Selection(range.start, range.end)
                                 editor.revealRange(range, 2)
                             }
-                        }, 100)
+                        }, 150)
                     })
             }
         }
@@ -104,9 +104,10 @@ function getTextPosition(searchFor, doc) {
 }
 
 /* Config ------------------------------------------------------------------- */
-export let methods
+const escapeStringRegexp = require('escape-string-regexp')
+export let methods: any = ''
 
 export function readConfig() {
     methods = workspace.getConfiguration('laravel-goto-lang').methods
-    methods = methods.join('|')
+    methods = methods.map((e) => escapeStringRegexp(e)).join('|')
 }
