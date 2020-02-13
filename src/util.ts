@@ -26,27 +26,41 @@ export async function getFilePaths(text, document) {
 }
 
 async function getData(document, path, list) {
-    let fileList = list.split('.')
-    let info = fileList.slice(1).join('.')
-    fileList.pop()
-
+    let result
     let workspaceFolder = workspace.getWorkspaceFolder(document.uri).uri.fsPath
-    let toCheck = []
-    while (fileList.length > 0) {
-        toCheck.push(`**/${fileList.join('/')}.php`)
-        fileList.pop()
-    }
-
     let editor = `${env.uriScheme}://file`
-    let result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
-    result = result.map((item) => {
-        return {
-            "showPath": item,
-            fileUri: Uri
-                .parse(`${editor}${workspaceFolder}${path}/${item}`)
-                .with({ authority: 'ctf0.laravel-goto-lang', query: info })
+
+    if (list.includes('.')) {
+        let fileList = list.split('.')
+        let info = fileList.slice(1).join('.')
+        fileList.pop()
+
+        let toCheck = []
+        while (fileList.length > 0) {
+            toCheck.push(`**/${fileList.join('/')}.php`)
+            fileList.pop()
         }
-    })
+
+        result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
+        result = result.map((item) => {
+            return {
+                "showPath": item,
+                fileUri: Uri
+                    .parse(`${editor}${workspaceFolder}${path}/${item}`)
+                    .with({ authority: 'ctf0.laravel-goto-lang', query: info })
+            }
+        })
+    } else {
+        result = await glob('*.json', { cwd: `${workspaceFolder}${path}` })
+        result = result.map((item) => {
+            return {
+                "showPath": item,
+                fileUri: Uri
+                    .parse(`${editor}${workspaceFolder}${path}/${item}`)
+                    .with({ authority: 'ctf0.laravel-goto-lang', query: list, fragment: 'json' })
+            }
+        })
+    }
 
     return result
 }
@@ -55,14 +69,14 @@ async function getData(document, path, list) {
 export function scrollToText() {
     window.registerUriHandler({
         handleUri(uri) {
-            let { authority, path, query } = uri
+            let { authority, path, query, fragment } = uri
 
             if (authority == 'ctf0.laravel-goto-lang') {
                 commands.executeCommand('vscode.openFolder', Uri.file(path))
                     .then(() => {
                         setTimeout(() => {
                             let editor = window.activeTextEditor
-                            let range = getTextPosition(query, editor.document)
+                            let range = getTextPosition(query, editor.document, fragment)
 
                             if (range) {
                                 editor.selection = new Selection(range.start, range.end)
@@ -75,7 +89,7 @@ export function scrollToText() {
     })
 }
 
-function getTextPosition(searchFor, doc) {
+function getTextPosition(searchFor, doc, isJson) {
     let txt = doc.getText()
     let match
 
@@ -91,12 +105,16 @@ function getTextPosition(searchFor, doc) {
         }
 
         match = new RegExp(regex).exec(txt)
+    } else if (isJson) {
+        match = new RegExp(`['"]${searchFor}['"].*:`).exec(txt)
     } else {
         match = new RegExp(`['"](?<found>${searchFor})['"].*=>`).exec(txt)
     }
 
 
     if (match) {
+        console.log(match)
+
         let pos = doc.positionAt(match.index + match[0].length)
 
         return new Range(pos, pos)

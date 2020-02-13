@@ -2,6 +2,10 @@
 
 - package by default search in `resources/lang` & for vendors it search at `resources/lang/vendor`
 
+## Features
+
+- direct scroll to language key
+
 ### Limitations
 
 1. similar nested keys wont behave as expected, ex.
@@ -24,7 +28,3 @@
     - `trans('messages.two.three)` will match the keys under **one.two.three**
 
 2. because of the previous issue, showing value on hover will give incorrect values
-
-### TODO
-
-- [ ] support json localization files

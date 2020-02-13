@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel goto lang",
     "description": "Quick jump to lang",
-    "version": "0.0.8",
+    "version": "0.1.0",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.41.0"
@@ -32,6 +32,7 @@
                     "type": "array",
                     "default": [
                         "trans",
+                        "trans_choice",
                         "__",
                         "@lang"
                     ],
