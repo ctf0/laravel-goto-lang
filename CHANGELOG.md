@@ -32,3 +32,8 @@
 ## 0.1.0
 
 - fix regresion in 0.0.9
+
+## 0.1.1
+
+- better jump to value
+- fix for json that have `.` in key name

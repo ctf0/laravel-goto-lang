@@ -30,7 +30,7 @@ async function getData(document, path, list) {
     let workspaceFolder = workspace.getWorkspaceFolder(document.uri).uri.fsPath
     let editor = `${env.uriScheme}://file`
 
-    if (list.includes('.')) {
+    if (!list.includes(' ')) {
         let fileList = list.split('.')
         let info = fileList.slice(1).join('.')
         fileList.pop()
@@ -80,9 +80,9 @@ export function scrollToText() {
 
                             if (range) {
                                 editor.selection = new Selection(range.start, range.end)
-                                editor.revealRange(range, 2)
+                                editor.revealRange(range, 3)
                             }
-                        }, 150)
+                        }, 500)
                     })
             }
         }
@@ -93,28 +93,26 @@ function getTextPosition(searchFor, doc, isJson) {
     let txt = doc.getText()
     let match
 
-    if (searchFor.includes('.')) {
+    if (isJson || searchFor.includes(' ')) {
+        match = new RegExp(`['"]${searchFor}['"].*:`).exec(txt)
+    } else if (searchFor.includes('.')) {
         let arr = searchFor.split('.')
         let last = arr[arr.length - 1]
         let regex = ''
 
         for (const item of arr) {
             regex += item == last
-                ? `(?<found>${item}).*=>`
+                ? `${item}.*=>`
                 : `['"]${item}.*\\[([\\S\\s]*?)`
         }
 
         match = new RegExp(regex).exec(txt)
-    } else if (isJson) {
-        match = new RegExp(`['"]${searchFor}['"].*:`).exec(txt)
     } else {
-        match = new RegExp(`['"](?<found>${searchFor})['"].*=>`).exec(txt)
+        match = new RegExp(`['"]${searchFor}['"].*=>`).exec(txt)
     }
 
 
     if (match) {
-        console.log(match)
-
         let pos = doc.positionAt(match.index + match[0].length)
 
         return new Range(pos, pos)
