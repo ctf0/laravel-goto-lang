@@ -32,37 +32,50 @@ async function getData(document, path, list) {
 
     if (!list.includes(' ')) {
         let fileList = list.split('.')
-        let info = fileList.slice(1).join('.')
-        fileList.pop()
 
-        let toCheck = []
-        while (fileList.length > 0) {
-            toCheck.push(`**/${fileList.join('/')}.php`)
-            fileList.pop()
-        }
-
-        result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
-        result = result.map((item) => {
-            return {
-                "showPath": item,
-                fileUri: Uri
-                    .parse(`${editor}${workspaceFolder}${path}/${item}`)
-                    .with({ authority: 'ctf0.laravel-goto-lang', query: info })
-            }
-        })
+        result = fileList.length > 1
+            ? phpFilePattern(workspaceFolder, path, editor, fileList)
+            : jsonFilePattern(workspaceFolder, path, editor, list)
     } else {
-        result = await glob('*.json', { cwd: `${workspaceFolder}${path}` })
-        result = result.map((item) => {
-            return {
-                "showPath": item,
-                fileUri: Uri
-                    .parse(`${editor}${workspaceFolder}${path}/${item}`)
-                    .with({ authority: 'ctf0.laravel-goto-lang', query: list, fragment: 'json' })
-            }
-        })
+        result = jsonFilePattern(workspaceFolder, path, editor, list)
     }
 
     return result
+}
+
+async function phpFilePattern(workspaceFolder, path, editor, list) {
+    let info = list.slice(1).join('.')
+    list.pop()
+
+    let toCheck = []
+    while (list.length > 0) {
+        toCheck.push(`**/${list.join('/')}.php`)
+        list.pop()
+    }
+
+    let result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
+
+    return result.map((item) => {
+        return {
+            "showPath": item,
+            fileUri: Uri
+                .parse(`${editor}${workspaceFolder}${path}/${item}`)
+                .with({ authority: 'ctf0.laravel-goto-lang', query: info })
+        }
+    })
+}
+
+async function jsonFilePattern(workspaceFolder, path, editor, list) {
+    let result = await glob('*.json', { cwd: `${workspaceFolder}${path}` })
+
+    return result.map((item) => {
+        return {
+            "showPath": item,
+            fileUri: Uri
+                .parse(`${editor}${workspaceFolder}${path}/${item}`)
+                .with({ authority: 'ctf0.laravel-goto-lang', query: list, fragment: 'json' })
+        }
+    })
 }
 
 /* Scroll ------------------------------------------------------------------- */
@@ -80,9 +93,9 @@ export function scrollToText() {
 
                             if (range) {
                                 editor.selection = new Selection(range.start, range.end)
-                                editor.revealRange(range, 3)
+                                editor.revealRange(range, 1)
                             }
-                        }, 500)
+                        }, 800)
                     })
             }
         }

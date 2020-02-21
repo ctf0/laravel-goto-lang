@@ -37,3 +37,9 @@
 
 - better jump to value
 - fix for json that have `.` in key name
+
+## 0.1.2
+
+- increase the timeout a little bit to get a consistent jump to value
+- make the cursor reveal at center
+- better check for json
