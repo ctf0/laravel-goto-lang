@@ -43,3 +43,8 @@
 - increase the timeout a little bit to get a consistent jump to value
 - make the cursor reveal at center
 - better check for json
+
+## 0.1.4
+
+- fix not correctly highlighting mixed quotes
+- offer to copy string if not found in file

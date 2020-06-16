@@ -10,13 +10,13 @@ import {
     Selection
 } from 'vscode'
 
-const glob = require("fast-glob")
+const glob = require('fast-glob')
 
 export async function getFilePaths(text, document) {
     let info = text.replace(/['"]/g, '')
     let langPath = '/resources/lang'
 
-    if (info.includes("::")) {
+    if (info.includes('::')) {
         let searchFor = info.split('::')
         langPath = `${langPath}/vendor/${searchFor[0]}`
         info = searchFor[1]
@@ -53,27 +53,27 @@ async function phpFilePattern(workspaceFolder, path, editor, list) {
         list.pop()
     }
 
-    let result = await glob(toCheck, { cwd: `${workspaceFolder}${path}` })
+    let result = await glob(toCheck, {cwd: `${workspaceFolder}${path}`})
 
     return result.map((item) => {
         return {
-            "showPath": item,
-            fileUri: Uri
+            'showPath': item,
+            fileUri   : Uri
                 .parse(`${editor}${workspaceFolder}${path}/${item}`)
-                .with({ authority: 'ctf0.laravel-goto-lang', query: info })
+                .with({authority: 'ctf0.laravel-goto-lang', query: info})
         }
     })
 }
 
 async function jsonFilePattern(workspaceFolder, path, editor, list) {
-    let result = await glob('*.json', { cwd: `${workspaceFolder}${path}` })
+    let result = await glob('*.json', {cwd: `${workspaceFolder}${path}`})
 
     return result.map((item) => {
         return {
-            "showPath": item,
-            fileUri: Uri
+            'showPath': item,
+            fileUri   : Uri
                 .parse(`${editor}${workspaceFolder}${path}/${item}`)
-                .with({ authority: 'ctf0.laravel-goto-lang', query: list, fragment: 'json' })
+                .with({authority: 'ctf0.laravel-goto-lang', query: list, fragment: 'json'})
         }
     })
 }
@@ -82,7 +82,7 @@ async function jsonFilePattern(workspaceFolder, path, editor, list) {
 export function scrollToText() {
     window.registerUriHandler({
         handleUri(uri) {
-            let { authority, path, query, fragment } = uri
+            let {authority, path, query, fragment} = uri
 
             if (authority == 'ctf0.laravel-goto-lang') {
                 commands.executeCommand('vscode.openFolder', Uri.file(path))
@@ -94,6 +94,17 @@ export function scrollToText() {
                             if (range) {
                                 editor.selection = new Selection(range.start, range.end)
                                 editor.revealRange(range, 1)
+                            }
+
+                            if (!range && query) {
+                                window.showInformationMessage(
+                                    'Laravel Goto Lang: Copy Key Name To Clipboard',
+                                    ...['Copy']
+                                ).then((e) => {
+                                    if (e) {
+                                        env.clipboard.writeText(query)
+                                    }
+                                })
                             }
                         }, 800)
                     })
