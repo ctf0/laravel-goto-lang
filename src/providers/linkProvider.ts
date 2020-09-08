@@ -1,12 +1,12 @@
 'use strict'
 
 import {
-    DocumentLinkProvider as vsDocumentLinkProvider,
-    TextDocument,
     DocumentLink,
+    DocumentLinkProvider as vsDocumentLinkProvider,
     Position,
-    window,
-    Range
+    Range,
+    TextDocument,
+    window
 } from 'vscode'
 import * as util from '../util'
 
