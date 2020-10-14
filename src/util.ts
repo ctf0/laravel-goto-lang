@@ -1,19 +1,19 @@
 'use strict'
 
 import {
-    workspace,
-    Uri,
+    commands,
     env,
     Range,
+    Selection,
+    Uri,
     window,
-    commands,
-    Selection
+    workspace
 } from 'vscode'
 
 const glob = require('fast-glob')
 
 export async function getFilePaths(text, document) {
-    let info = text.replace(/['"]/g, '')
+    let info = text.replace(/(^['"]|['"]$)/g, '')
     let langPath = '/resources/lang'
 
     if (info.includes('::')) {

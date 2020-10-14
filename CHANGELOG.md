@@ -48,3 +48,7 @@
 
 - fix not correctly highlighting mixed quotes
 - offer to copy string if not found in file
+
+## 0.1.5
+
+- fix not correctly scrolling to keys with mixed quotes
