@@ -102,7 +102,7 @@ export function scrollToText() {
                                     ...['Copy']
                                 ).then((e) => {
                                     if (e) {
-                                        env.clipboard.writeText(query)
+                                        env.clipboard.writeText(`'${query}' => `)
                                     }
                                 })
                             }

@@ -52,3 +52,7 @@
 ## 0.1.5
 
 - fix not correctly scrolling to keys with mixed quotes
+
+## 0.1.6
+
+- ignore adding links to dynamic values ex.`hello.$world`
