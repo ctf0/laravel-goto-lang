@@ -56,3 +56,7 @@
 ## 0.1.6
 
 - ignore adding links to dynamic values ex.`hello.$world`
+
+## 0.1.7
+
+- fix link leaking to incorrect quotes

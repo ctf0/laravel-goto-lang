@@ -23,8 +23,8 @@ export default class LinkProvider implements vsDocumentLinkProvider {
 
         if (editor) {
             let range = editor.visibleRanges[0]
-            let reg_single = new RegExp(`(?<=(${this.regex})\\()'([^$]*)'`, 'g')
-            let reg_double = new RegExp(`(?<=(${this.regex})\\()"([^$]*)"`, 'g')
+            let reg_single = new RegExp(`(?<=(${this.regex})\\()'([^$]*?)'`, 'g')
+            let reg_double = new RegExp(`(?<=(${this.regex})\\()"([^$]*?)"`, 'g')
             let documentLinks = []
 
             for (let i = range.start.line; i <= range.end.line; i++) {
