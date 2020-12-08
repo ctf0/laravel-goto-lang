@@ -2,10 +2,10 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.1.7",
+    "version": "0.1.8",
     "publisher": "ctf0",
     "engines": {
-        "vscode": "^1.41.0"
+        "vscode": "^1.51.0"
     },
     "repository": "https://github.com/ctf0/laravel-goto-lang",
     "icon": "images/logo.png",
@@ -28,7 +28,7 @@
             "type": "object",
             "title": "Laravel Goto Lang",
             "properties": {
-                "laravel-goto-lang.methods": {
+                "laravelGotoLang.methods": {
                     "type": "array",
                     "default": [
                         "trans",
@@ -55,18 +55,18 @@
         "test": "node ./out/test/runTest.js"
     },
     "devDependencies": {
-        "@types/glob": "^7.1.1",
-        "@types/mocha": "^5.2.7",
-        "@types/node": "^12.11.7",
-        "@types/vscode": "^1.41.0",
-        "mocha": "^6.2.2",
-        "tslint": "^5.20.0",
-        "typescript": "^3.6.4",
-        "vscode-test": "^1.2.2"
+        "@types/glob": "^7.1.3",
+        "@types/mocha": "^8.2.0",
+        "@types/node": "^14.14.10",
+        "@types/vscode": "^1.51.0",
+        "mocha": "^8.2.1",
+        "tslint": "^5.20.1",
+        "typescript": "^4.1.2",
+        "vscode-test": "^1.4.1"
     },
     "dependencies": {
-        "escape-string-regexp": "^2.0.0",
-        "fast-glob": "^3.1.1",
+        "escape-string-regexp": "^4.0.0",
+        "fast-glob": "^3.2.4",
         "lodash.debounce": "^4.0.8"
     }
 }

@@ -27,7 +27,7 @@ export async function getFilePaths(text, document) {
 
 async function getData(document, path, list) {
     let result
-    let workspaceFolder = workspace.getWorkspaceFolder(document.uri).uri.fsPath
+    let workspaceFolder = workspace.getWorkspaceFolder(document.uri)?.uri.fsPath
     let editor = `${env.uriScheme}://file`
 
     if (!list.includes(' ')) {
@@ -57,8 +57,8 @@ async function phpFilePattern(workspaceFolder, path, editor, list) {
 
     return result.map((item) => {
         return {
-            'showPath': item,
-            fileUri   : Uri
+            'showPath' : item,
+            fileUri    : Uri
                 .parse(`${editor}${workspaceFolder}${path}/${item}`)
                 .with({authority: 'ctf0.laravel-goto-lang', query: info})
         }
@@ -70,8 +70,8 @@ async function jsonFilePattern(workspaceFolder, path, editor, list) {
 
     return result.map((item) => {
         return {
-            'showPath': item,
-            fileUri   : Uri
+            'showPath' : item,
+            fileUri    : Uri
                 .parse(`${editor}${workspaceFolder}${path}/${item}`)
                 .with({authority: 'ctf0.laravel-goto-lang', query: list, fragment: 'json'})
         }
@@ -81,8 +81,8 @@ async function jsonFilePattern(workspaceFolder, path, editor, list) {
 /* Scroll ------------------------------------------------------------------- */
 export function scrollToText() {
     window.registerUriHandler({
-        handleUri(uri) {
-            let {authority, path, query, fragment} = uri
+        handleUri(provider) {
+            let {authority, path, query, fragment} = provider
 
             if (authority == 'ctf0.laravel-goto-lang') {
                 commands.executeCommand('vscode.openFolder', Uri.file(path))
@@ -145,9 +145,10 @@ function getTextPosition(searchFor, doc, isJson) {
 
 /* Config ------------------------------------------------------------------- */
 const escapeStringRegexp = require('escape-string-regexp')
+export const PACKAGE_NAME = 'laravelGotoLang'
 export let methods: any = ''
 
 export function readConfig() {
-    methods = workspace.getConfiguration('laravel-goto-lang').methods
-    methods = methods.map((e) => escapeStringRegexp(e)).join('|')
+    let config = workspace.getConfiguration(PACKAGE_NAME)
+    methods = config.methods.map((e) => escapeStringRegexp(e)).join('|')
 }

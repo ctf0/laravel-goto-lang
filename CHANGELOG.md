@@ -60,3 +60,7 @@
 ## 0.1.7
 
 - fix link leaking to incorrect quotes
+
+## 0.1.8
+
+- fix package settings name
