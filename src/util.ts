@@ -11,39 +11,53 @@ import {
 } from 'vscode'
 
 const glob = require('fast-glob')
+const pascalcase = require('pascalcase')
 
 export async function getFilePaths(text, document) {
-    let info = text.replace(/(^['"]|['"]$)/g, '')
-    let langPath = '/resources/lang'
+    text = text.replace(/(^['"]|['"]$)/g, '')
+    let internal = getDocFullPath(document, defaultPath)
 
-    if (info.includes('::')) {
-        let searchFor = info.split('::')
-        langPath = `${langPath}/vendor/${searchFor[0]}`
-        info = searchFor[1]
+    if (text.includes('::')) {
+        text = text.split('::')
+        let vendor = text[0]
+        let key = text[1]
+
+        let list: any = await Promise.all(
+            vendorPath
+                .map((item) => {
+                    return getData(
+                        document,
+                        getDocFullPath(document, item).replace('*', pascalcase(vendor)),
+                        key
+                    )
+                })
+                .concat(await getData(document, `${internal}/vendor/${vendor}`, key))
+        )
+
+        return list.flat()
     }
 
-    return getData(document, langPath, info)
+    return getData(document, internal, text)
 }
 
-async function getData(document, path, list) {
+async function getData(document, path, text) {
     let result
-    let workspaceFolder = workspace.getWorkspaceFolder(document.uri)?.uri.fsPath
     let editor = `${env.uriScheme}://file`
 
-    if (!list.includes(' ')) {
-        let fileList = list.split('.')
+    if (!text.includes(' ')) {
+        let fileList = text.split('.')
 
         result = fileList.length > 1
-            ? phpFilePattern(workspaceFolder, path, editor, fileList)
-            : jsonFilePattern(workspaceFolder, path, editor, list)
+            ? await phpFilePattern(document, path, editor, fileList)
+            : await jsonFilePattern(document, path, editor, text)
     } else {
-        result = jsonFilePattern(workspaceFolder, path, editor, list)
+        result = await jsonFilePattern(document, path, editor, text)
     }
 
     return result
 }
 
-async function phpFilePattern(workspaceFolder, path, editor, list) {
+async function phpFilePattern(doc, path, editor, list) {
     let info = list.slice(1).join('.')
     list.pop()
 
@@ -53,29 +67,37 @@ async function phpFilePattern(workspaceFolder, path, editor, list) {
         list.pop()
     }
 
-    let result = await glob(toCheck, {cwd: `${workspaceFolder}${path}`})
+    let result = await glob(toCheck, {cwd: path})
 
-    return result.map((item) => {
+    return result.map((file) => {
         return {
-            'showPath' : item,
-            fileUri    : Uri
-                .parse(`${editor}${workspaceFolder}${path}/${item}`)
+            tooltip : getDocFullPath(doc, path, false) + `/${file}`,
+            fileUri : Uri
+                .parse(`${editor}${path}/${file}`)
                 .with({authority: 'ctf0.laravel-goto-lang', query: info})
         }
     })
 }
 
-async function jsonFilePattern(workspaceFolder, path, editor, list) {
-    let result = await glob('*.json', {cwd: `${workspaceFolder}${path}`})
+async function jsonFilePattern(doc, path, editor, text) {
+    let result = await glob('*.json', {cwd: path})
 
-    return result.map((item) => {
+    return result.map((file) => {
         return {
-            'showPath' : item,
-            fileUri    : Uri
-                .parse(`${editor}${workspaceFolder}${path}/${item}`)
-                .with({authority: 'ctf0.laravel-goto-lang', query: list, fragment: 'json'})
+            tooltip : getDocFullPath(doc, path, false) + `/${file}`,
+            fileUri : Uri
+                .parse(`${editor}${path}/${file}`)
+                .with({authority: 'ctf0.laravel-goto-lang', query: text, fragment: 'json'})
         }
     })
+}
+
+function getDocFullPath(doc, path, add = true) {
+    let ws = workspace.getWorkspaceFolder(doc.uri)?.uri.fsPath
+
+    return add
+        ? path.replace('$base', ws)
+        : path.replace(`${ws}/`, '')
 }
 
 /* Scroll ------------------------------------------------------------------- */
@@ -148,7 +170,12 @@ const escapeStringRegexp = require('escape-string-regexp')
 export const PACKAGE_NAME = 'laravelGotoLang'
 export let methods: any = ''
 
+let defaultPath: string = ''
+let vendorPath: any = []
+
 export function readConfig() {
     let config = workspace.getConfiguration(PACKAGE_NAME)
     methods = config.methods.map((e) => escapeStringRegexp(e)).join('|')
+    defaultPath = config.defaultPath
+    vendorPath = config.vendorPath
 }

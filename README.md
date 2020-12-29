@@ -1,7 +1,5 @@
 # Laravel Goto Lang
 
-- package by default search in `resources/lang` & for vendors it search at `resources/lang/vendor`
-
 ## Features
 
 - direct scroll to language key

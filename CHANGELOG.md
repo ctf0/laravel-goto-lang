@@ -64,3 +64,13 @@
 ## 0.1.8
 
 - fix package settings name
+
+## 0.2.0
+
+- i recently started using [laravel-modules](https://nwidart.com/laravel-modules/v6/installation-and-setup) & manual navigation is just impossible, so now we have support to a custom internal & vendor paths 🎊 💃 🚀,
+
+    make sure u r following the nameing convention of `Pascal > Snake` ex.
+    + `module namespace` > `MyDashboard`
+    + `view namespace` > `my_dashboard`
+- also now the hover card will show the full file path from root instead of just its name
+- oh & Merry Christmas 🎄
