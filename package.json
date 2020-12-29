@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.52.0"
@@ -43,6 +43,16 @@
                     "uniqueItems": true,
                     "description": "methods to search for"
                 },
+                "laravelGotoLang.showValueOnHover": {
+                    "type": "boolean",
+                    "default": false,
+                    "markdownDescription": "show key value on hover (note that resolving the key value for the first time might take long)"
+                },
+                "laravelGotoLang.waitB4Scroll": {
+                    "type": "integer",
+                    "default": 1000,
+                    "description": "time to wait until doc is ready to be searched (big files might need longer delay)"
+                },
                 "laravelGotoLang.defaultPath": {
                     "type": "string",
                     "default": "$base/resources/lang",
@@ -82,6 +92,7 @@
         "vscode-test": "^1.4.1"
     },
     "dependencies": {
+        "await-exec": "^0.1.2",
         "escape-string-regexp": "^4.0.0",
         "fast-glob": "^3.2.4",
         "lodash.debounce": "^4.0.8",

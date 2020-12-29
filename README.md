@@ -3,10 +3,11 @@
 ## Features
 
 - direct scroll to language key
+- showing value on hover `laravel/tinker` must be installed
 
 ### Limitations
 
-1. similar nested keys wont behave as expected, ex.
+- similar nested keys wont behave as expected, ex.
 
     ```php
     // messages.php
@@ -24,5 +25,3 @@
 
     - `trans('messages.one.two.three)` will match correctly
     - `trans('messages.two.three)` will match the keys under **one.two.three**
-
-2. because of the previous issue, showing value on hover will give incorrect values

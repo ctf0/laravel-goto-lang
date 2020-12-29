@@ -10,12 +10,20 @@ import {
     workspace
 } from 'vscode'
 
-const glob = require('fast-glob')
+const glob       = require('fast-glob')
+const path       = require('path')
 const pascalcase = require('pascalcase')
+const exec       = require('await-exec')
+
+let ws = null
+let cache = []
 
 export async function getFilePaths(text, document) {
+    ws = workspace.getWorkspaceFolder(document.uri)?.uri.fsPath
+
     text = text.replace(/(^['"]|['"]$)/g, '')
-    let internal = getDocFullPath(document, defaultPath)
+    let fullKey = text
+    let internal = getDocFullPath(defaultPath)
 
     if (text.includes('::')) {
         text = text.split('::')
@@ -26,38 +34,38 @@ export async function getFilePaths(text, document) {
             vendorPath
                 .map((item) => {
                     return getData(
-                        document,
-                        getDocFullPath(document, item).replace('*', pascalcase(vendor)),
-                        key
+                        getDocFullPath(item).replace('*', pascalcase(vendor)),
+                        key,
+                        fullKey
                     )
                 })
-                .concat(await getData(document, `${internal}/vendor/${vendor}`, key))
+                .concat(await getData(`${internal}/vendor/${vendor}`, key, fullKey))
         )
 
         return list.flat()
     }
 
-    return getData(document, internal, text)
+    return getData(internal, text, fullKey)
 }
 
-async function getData(document, path, text) {
+async function getData(path, key, fullKey) {
     let result
     let editor = `${env.uriScheme}://file`
 
-    if (!text.includes(' ')) {
-        let fileList = text.split('.')
+    if (!key.includes(' ')) {
+        let fileList = key.split('.')
 
         result = fileList.length > 1
-            ? await phpFilePattern(document, path, editor, fileList)
-            : await jsonFilePattern(document, path, editor, text)
+            ? await phpFilePattern(path, editor, fileList, fullKey)
+            : await jsonFilePattern(path, editor, key, fullKey)
     } else {
-        result = await jsonFilePattern(document, path, editor, text)
+        result = await jsonFilePattern(path, editor, key, fullKey)
     }
 
     return result
 }
 
-async function phpFilePattern(doc, path, editor, list) {
+async function phpFilePattern(path, editor, list, fullKey) {
     let info = list.slice(1).join('.')
     list.pop()
 
@@ -68,36 +76,89 @@ async function phpFilePattern(doc, path, editor, list) {
     }
 
     let result = await glob(toCheck, {cwd: path})
+    let data = []
 
-    return result.map((file) => {
-        return {
-            tooltip : getDocFullPath(doc, path, false) + `/${file}`,
+    for (const file of result) {
+        let val = await getLangValue(file, fullKey)
+        let url = getDocFullPath(path, false) + `/${file}`
+
+        data.push({
+            tooltip : val ? `${val} "${url}"` : url,
             fileUri : Uri
                 .parse(`${editor}${path}/${file}`)
                 .with({authority: 'ctf0.laravel-goto-lang', query: info})
-        }
-    })
+        })
+    }
+
+    return data
 }
 
-async function jsonFilePattern(doc, path, editor, text) {
+async function jsonFilePattern(path, editor, key, fullKey) {
     let result = await glob('*.json', {cwd: path})
+    let data = []
 
-    return result.map((file) => {
-        return {
-            tooltip : getDocFullPath(doc, path, false) + `/${file}`,
+    for (const file of result) {
+        let val = await getLangValue(file, fullKey)
+        let url = getDocFullPath(path, false) + `/${file}`
+
+        data.push({
+            tooltip : val ? `${val} "${url}"` : url,
             fileUri : Uri
                 .parse(`${editor}${path}/${file}`)
-                .with({authority: 'ctf0.laravel-goto-lang', query: text, fragment: 'json'})
-        }
-    })
+                .with({authority: 'ctf0.laravel-goto-lang', query: key, fragment: 'json'})
+        })
+    }
+
+    return data
 }
 
-function getDocFullPath(doc, path, add = true) {
-    let ws = workspace.getWorkspaceFolder(doc.uri)?.uri.fsPath
-
+function getDocFullPath(path, add = true) {
     return add
         ? path.replace('$base', ws)
         : path.replace(`${ws}/`, '')
+}
+
+/* Tinker ------------------------------------------------------------------- */
+let counter = 1
+
+async function getLangValue(file, fullKey) {
+    if (config.showValueOnHover) {
+        let timer
+        let locale = path.parse(file).name
+        let key = `trans('${fullKey}', [], '${locale}')`
+        let cached = cache.find((e) => e.key == key)
+
+        if (!cached) {
+            try {
+                let res = await exec(`php artisan tinker --execute="echo ${key}"`, {
+                    cwd   : ws,
+                    shell : env.shell
+                })
+
+                let data = res.stdout.replace(/<.*/, '').trim()
+
+                cache.push({
+                    key : key,
+                    val : data
+                })
+
+                return data
+            } catch (error) {
+                console.error(error)
+
+                if (counter >= 5) {
+                    return clearTimeout(timer)
+                }
+
+                timer = setTimeout(() => {
+                    counter++
+                    getLangValue(file, fullKey)
+                }, 2000)
+            }
+        }
+
+        return cached.val
+    }
 }
 
 /* Scroll ------------------------------------------------------------------- */
@@ -128,7 +189,7 @@ export function scrollToText() {
                                     }
                                 })
                             }
-                        }, 800)
+                        }, config.waitB4Scroll)
                     })
             }
         }
@@ -168,13 +229,14 @@ function getTextPosition(searchFor, doc, isJson) {
 /* Config ------------------------------------------------------------------- */
 const escapeStringRegexp = require('escape-string-regexp')
 export const PACKAGE_NAME = 'laravelGotoLang'
+let config: any = ''
 export let methods: any = ''
 
 let defaultPath: string = ''
 let vendorPath: any = []
 
 export function readConfig() {
-    let config = workspace.getConfiguration(PACKAGE_NAME)
+    config = workspace.getConfiguration(PACKAGE_NAME)
     methods = config.methods.map((e) => escapeStringRegexp(e)).join('|')
     defaultPath = config.defaultPath
     vendorPath = config.vendorPath

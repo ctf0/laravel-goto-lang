@@ -74,3 +74,9 @@
     + `view namespace` > `my_dashboard`
 - also now the hover card will show the full file path from root instead of just its name
 - oh & Merry Christmas 🎄
+
+## 0.2.1
+
+- we can now view the config key value with the help of `laravel/tinker`
+- add new config `laravelGotoLang.waitB4Scroll` to freely customize the file search delay
+- add new config `laravelGotoLang.showValueOnHover` to toggle value on hover on/off
