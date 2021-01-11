@@ -80,3 +80,7 @@
 - we can now view the config key value with the help of `laravel/tinker`
 - add new config `laravelGotoLang.waitB4Scroll` to freely customize the file search delay
 - add new config `laravelGotoLang.showValueOnHover` to toggle value on hover on/off
+
+## 0.2.2
+
+- add cacheing, subsequent calls will load instantly, using `showValueOnHover` should be slightly quicker now

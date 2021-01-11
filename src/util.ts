@@ -10,42 +10,54 @@ import {
     workspace
 } from 'vscode'
 
-const glob       = require('fast-glob')
-const path       = require('path')
+const glob = require('fast-glob')
+const path = require('path')
 const pascalcase = require('pascalcase')
-const exec       = require('await-exec')
+const exec = require('await-exec')
+const escapeStringRegexp = require('escape-string-regexp')
 
-let ws = null
-let cache = []
+let ws
+let cache_store = []
 
 export async function getFilePaths(text, document) {
     ws = workspace.getWorkspaceFolder(document.uri)?.uri.fsPath
 
     text = text.replace(/(^['"]|['"]$)/g, '')
     let fullKey = text
-    let internal = getDocFullPath(defaultPath)
+    let list = checkCache(cache_store, fullKey)
 
-    if (text.includes('::')) {
-        text = text.split('::')
-        let vendor = text[0]
-        let key = text[1]
+    if (!list.length) {
+        let internal = getDocFullPath(defaultPath)
+        let char     = '::'
 
-        let list: any = await Promise.all(
-            vendorPath
-                .map((item) => {
-                    return getData(
-                        getDocFullPath(item).replace('*', pascalcase(vendor)),
-                        key,
-                        fullKey
-                    )
-                })
-                .concat(await getData(`${internal}/vendor/${vendor}`, key, fullKey))
-        )
+        if (text.includes(char)) {
+            text = text.split(char)
+            let vendor = text[0]
+            let key = text[1]
 
-        return list.flat()
+            list = await Promise.all(
+                vendorPath
+                    .map((item) => {
+                        return getData(
+                            getDocFullPath(item).replace('*', pascalcase(vendor)),
+                            key,
+                            fullKey
+                        )
+                    })
+                    .concat(await getData(`${internal}/vendor/${vendor}`, key, fullKey))
+            )
+
+            list = list.flat()
+
+            saveCache(cache_store, fullKey, list)
+        } else {
+            list = await getData(internal, text, fullKey)
+
+            saveCache(cache_store, fullKey, list)
+        }
     }
 
-    return getData(internal, text, fullKey)
+    return list
 }
 
 async function getData(path, key, fullKey) {
@@ -83,7 +95,7 @@ async function phpFilePattern(path, editor, list, fullKey) {
         let url = getDocFullPath(path, false) + `/${file}`
 
         data.push({
-            tooltip : val ? `${val} "${url}"` : url,
+            tooltip : val ? `${val} (${url})` : url,
             fileUri : Uri
                 .parse(`${editor}${path}/${file}`)
                 .with({authority: 'ctf0.laravel-goto-lang', query: info})
@@ -102,7 +114,7 @@ async function jsonFilePattern(path, editor, key, fullKey) {
         let url = getDocFullPath(path, false) + `/${file}`
 
         data.push({
-            tooltip : val ? `${val} "${url}"` : url,
+            tooltip : val ? `${val} (${url})` : url,
             fileUri : Uri
                 .parse(`${editor}${path}/${file}`)
                 .with({authority: 'ctf0.laravel-goto-lang', query: key, fragment: 'json'})
@@ -120,33 +132,29 @@ function getDocFullPath(path, add = true) {
 
 /* Tinker ------------------------------------------------------------------- */
 let counter = 1
+let cache_store_tinker = []
 
 async function getLangValue(file, fullKey) {
     if (config.showValueOnHover) {
         let timer
         let locale = path.parse(file).name
         let key = `trans('${fullKey}', [], '${locale}')`
-        let cached = cache.find((e) => e.key == key)
+        let list = checkCache(cache_store_tinker, key)
 
-        if (!cached) {
+        if (!list || !list.length) {
             try {
                 let res = await exec(`php artisan tinker --execute="echo ${key}"`, {
                     cwd   : ws,
                     shell : env.shell
                 })
 
-                let data = res.stdout.replace(/<.*/, '').trim()
+                list = res.stdout.replace(/<.*/, '').trim().replace(/['"]/g, '')
 
-                cache.push({
-                    key : key,
-                    val : data
-                })
-
-                return data
+                saveCache(cache_store_tinker, key, list)
             } catch (error) {
-                console.error(error)
+                // console.error(error)
 
-                if (counter >= 5) {
+                if (counter >= 3) {
                     return clearTimeout(timer)
                 }
 
@@ -157,7 +165,7 @@ async function getLangValue(file, fullKey) {
             }
         }
 
-        return cached.val
+        return list
     }
 }
 
@@ -226,12 +234,29 @@ function getTextPosition(searchFor, doc, isJson) {
     }
 }
 
-/* Config ------------------------------------------------------------------- */
-const escapeStringRegexp = require('escape-string-regexp')
-export const PACKAGE_NAME = 'laravelGotoLang'
-let config: any = ''
-export let methods: any = ''
+/* Helpers ------------------------------------------------------------------ */
 
+function checkCache(cache_store, text) {
+    let check = cache_store.find((e) => e.key == text)
+
+    return check ? check.val : []
+}
+
+function saveCache(cache_store, text, val) {
+    checkCache(cache_store, text).length
+        ? false
+        : cache_store.push({
+            key : text,
+            val : val
+        })
+
+    return val
+}
+
+/* Config ------------------------------------------------------------------- */
+export const PACKAGE_NAME = 'laravelGotoLang'
+export let methods: any = ''
+let config: any = ''
 let defaultPath: string = ''
 let vendorPath: any = []
 

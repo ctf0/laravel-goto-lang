@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.52.0"
@@ -46,7 +46,7 @@
                 "laravelGotoLang.showValueOnHover": {
                     "type": "boolean",
                     "default": false,
-                    "markdownDescription": "show key value on hover (note that resolving the key value for the first time might take long)"
+                    "markdownDescription": "show key value on hover (approx 1-sec for each key to be resolved)"
                 },
                 "laravelGotoLang.waitB4Scroll": {
                     "type": "integer",
