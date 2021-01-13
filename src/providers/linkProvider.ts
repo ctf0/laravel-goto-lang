@@ -3,14 +3,12 @@
 import {
     DocumentLink,
     DocumentLinkProvider,
-    Position,
     TextDocument,
     window
 } from 'vscode'
 import * as util from '../util'
 
 export default class LinkProvider implements DocumentLinkProvider {
-
     methods
 
     constructor() {
@@ -21,57 +19,33 @@ export default class LinkProvider implements DocumentLinkProvider {
         let editor = window.activeTextEditor
 
         if (editor) {
+            util.setWs(doc.uri)
+
             const text = doc.getText()
             let links = []
 
             /* -------------------------------------------------------------------------- */
 
-            let reg_single = new RegExp(`(?<=(${this.methods})\\()'([^$]*?)'`, 'g')
-            let single_matches
+            const reg_sngl = new RegExp(`(?<=(${this.methods})\\()'([^$]*?)'`, 'g')
+            const reg_dbl = new RegExp(`(?<=(${this.methods})\\()"([^$]*?)"`, 'g')
+            let sngl_matches = [...text.matchAll(reg_sngl)]
+            let dbl_matches = [...text.matchAll(reg_dbl)]
 
-            while ((single_matches = reg_single.exec(text)) !== null) {
-                let found = single_matches[0]
-                const line = doc.lineAt(doc.positionAt(single_matches.index).line)
-                const indexOf = line.text.indexOf(found)
-                const position = new Position(line.lineNumber, indexOf)
-                const range = doc.getWordRangeAtPosition(position, new RegExp(reg_single))
+            for (const match of dbl_matches.concat(sngl_matches)) {
+                let found = match[0]
+                let files = await util.getFilePaths(found)
 
-                if (range) {
-                    let files = await util.getFilePaths(found, doc)
+                if (files.length) {
+                    const range = doc.getWordRangeAtPosition(
+                        doc.positionAt(match.index),
+                        reg_sngl
+                    )
 
-                    if (files?.length) {
-                        for (const file of files) {
-                            let documentlink     = new DocumentLink(range, file.fileUri)
-                            documentlink.tooltip = file.tooltip
+                    for (const file of files) {
+                        let documentlink     = new DocumentLink(range, file.fileUri)
+                        documentlink.tooltip = file.tooltip
 
-                            links.push(documentlink)
-                        }
-                    }
-                }
-            }
-
-            /* -------------------------------------------------------------------------- */
-
-            let reg_double = new RegExp(`(?<=(${this.methods})\\()"([^$]*?)"`, 'g')
-            let dbl_matches
-
-            while ((dbl_matches = reg_double.exec(text)) !== null) {
-                let found      = dbl_matches[0]
-                const line     = doc.lineAt(doc.positionAt(dbl_matches.index).line)
-                const indexOf  = line.text.indexOf(found)
-                const position = new Position(line.lineNumber, indexOf)
-                const range    = doc.getWordRangeAtPosition(position, new RegExp(reg_double))
-
-                if (range) {
-                    let files = await util.getFilePaths(found, doc)
-
-                    if (files.length) {
-                        for (const file of files) {
-                            let documentlink     = new DocumentLink(range, file.fileUri)
-                            documentlink.tooltip = file.tooltip
-
-                            links.push(documentlink)
-                        }
+                        links.push(documentlink)
                     }
                 }
             }

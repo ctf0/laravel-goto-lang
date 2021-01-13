@@ -17,11 +17,16 @@ const exec = require('await-exec')
 const escapeStringRegexp = require('escape-string-regexp')
 
 let ws
+
+export function setWs(uri) {
+    ws = workspace.getWorkspaceFolder(uri)?.uri.fsPath
+}
+
+/* -------------------------------------------------------------------------- */
+
 let cache_store = []
 
-export async function getFilePaths(text, document) {
-    ws = workspace.getWorkspaceFolder(document.uri)?.uri.fsPath
-
+export async function getFilePaths(text) {
     text = text.replace(/(^['"]|['"]$)/g, '')
     let fullKey = text
     let list = checkCache(cache_store, fullKey)
@@ -255,8 +260,8 @@ function saveCache(cache_store, text, val) {
 
 /* Config ------------------------------------------------------------------- */
 export const PACKAGE_NAME = 'laravelGotoLang'
-export let methods: any = ''
 let config: any = ''
+export let methods: any = ''
 let defaultPath: string = ''
 let vendorPath: any = []
 

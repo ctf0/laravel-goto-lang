@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.52.0"
@@ -21,7 +21,8 @@
     "activationEvents": [
         "onLanguage:php",
         "onLanguage:blade",
-        "onUri"
+        "onUri",
+        "onStartupFinished"
     ],
     "contributes": {
         "configuration": {
@@ -84,7 +85,7 @@
     "devDependencies": {
         "@types/glob": "^7.1.3",
         "@types/mocha": "^8.2.0",
-        "@types/node": "^14.14.16",
+        "@types/node": "^14.14.20",
         "@types/vscode": "^1.52.0",
         "mocha": "^8.2.1",
         "tslint": "^5.20.1",
