@@ -22,14 +22,14 @@ export default class LinkProvider implements DocumentLinkProvider {
             util.setWs(doc.uri)
 
             const text = doc.getText()
-            let links = []
+            let links  = []
 
             /* -------------------------------------------------------------------------- */
 
-            const reg_sngl = new RegExp(`(?<=(${this.methods})\\()'([^$]*?)'`, 'g')
-            const reg_dbl = new RegExp(`(?<=(${this.methods})\\()"([^$]*?)"`, 'g')
+            const reg_sngl   = new RegExp(`(?<=(${this.methods})\\()'([^$]*?)'`, 'g')
+            const reg_dbl    = new RegExp(`(?<=(${this.methods})\\()"([^$]*?)"`, 'g')
             let sngl_matches = [...text.matchAll(reg_sngl)]
-            let dbl_matches = [...text.matchAll(reg_dbl)]
+            let dbl_matches  = [...text.matchAll(reg_dbl)]
 
             for (const match of dbl_matches.concat(sngl_matches)) {
                 let found = match[0]

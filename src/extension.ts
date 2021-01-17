@@ -5,7 +5,7 @@ import LinkProvider                   from './providers/linkProvider'
 import * as util                      from './util'
 
 const debounce = require('lodash.debounce')
-let providers = []
+let providers  = []
 
 export function activate() {
     util.readConfig()
@@ -19,16 +19,30 @@ export function activate() {
 
     // links
     initProviders()
-    window.onDidChangeActiveTextEditor((e) => initProviders())
+    window.onDidChangeActiveTextEditor(async (e) => {
+        await clearAll()
+        initProviders()
+    })
 
     // scroll
     util.scrollToText()
 }
 
-const initProviders = debounce(function () {
+function clearAll() {
+    return new Promise((res, rej) => {
+        providers.map((e) => e.dispose())
+        providers = []
+
+        setTimeout(() => {
+            return res(true)
+        }, 500)
+    })
+}
+
+const initProviders = debounce(function() {
     providers.push(languages.registerDocumentLinkProvider(['php', 'blade'], new LinkProvider()))
 }, 250)
 
 export function deactivate() {
-    providers.forEach((e) => e.dispose())
+    clearAll()
 }

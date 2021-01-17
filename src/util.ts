@@ -10,10 +10,10 @@ import {
     workspace
 } from 'vscode'
 
-const glob = require('fast-glob')
-const path = require('path')
-const pascalcase = require('pascalcase')
-const exec = require('await-exec')
+const glob               = require('fast-glob')
+const path               = require('path')
+const pascalcase         = require('pascalcase')
+const exec               = require('await-exec')
 const escapeStringRegexp = require('escape-string-regexp')
 
 let ws
@@ -27,18 +27,18 @@ export function setWs(uri) {
 let cache_store = []
 
 export async function getFilePaths(text) {
-    text = text.replace(/(^['"]|['"]$)/g, '')
+    text        = text.replace(/(^['"]|['"]$)/g, '')
     let fullKey = text
-    let list = checkCache(cache_store, fullKey)
+    let list    = checkCache(cache_store, fullKey)
 
     if (!list.length) {
         let internal = getDocFullPath(defaultPath)
         let char     = '::'
 
         if (text.includes(char)) {
-            text = text.split(char)
+            text       = text.split(char)
             let vendor = text[0]
-            let key = text[1]
+            let key    = text[1]
 
             list = await Promise.all(
                 vendorPath
@@ -93,7 +93,7 @@ async function phpFilePattern(path, editor, list, fullKey) {
     }
 
     let result = await glob(toCheck, {cwd: path})
-    let data = []
+    let data   = []
 
     for (const file of result) {
         let val = await getLangValue(file, fullKey)
@@ -112,7 +112,7 @@ async function phpFilePattern(path, editor, list, fullKey) {
 
 async function jsonFilePattern(path, editor, key, fullKey) {
     let result = await glob('*.json', {cwd: path})
-    let data = []
+    let data   = []
 
     for (const file of result) {
         let val = await getLangValue(file, fullKey)
@@ -136,15 +136,15 @@ function getDocFullPath(path, add = true) {
 }
 
 /* Tinker ------------------------------------------------------------------- */
-let counter = 1
+let counter            = 1
 let cache_store_tinker = []
 
 async function getLangValue(file, fullKey) {
     if (config.showValueOnHover) {
         let timer
         let locale = path.parse(file).name
-        let key = `trans('${fullKey}', [], '${locale}')`
-        let list = checkCache(cache_store_tinker, key)
+        let key    = `trans('${fullKey}', [], '${locale}')`
+        let list   = checkCache(cache_store_tinker, key)
 
         if (!list || !list.length) {
             try {
@@ -185,7 +185,7 @@ export function scrollToText() {
                     .then(() => {
                         setTimeout(() => {
                             let editor = window.activeTextEditor
-                            let range = getTextPosition(query, editor.document, fragment)
+                            let range  = getTextPosition(query, editor.document, fragment)
 
                             if (range) {
                                 editor.selection = new Selection(range.start, range.end)
@@ -216,8 +216,8 @@ function getTextPosition(searchFor, doc, isJson) {
     if (isJson || searchFor.includes(' ')) {
         match = new RegExp(`['"]${searchFor}['"].*:`).exec(txt)
     } else if (searchFor.includes('.')) {
-        let arr = searchFor.split('.')
-        let last = arr[arr.length - 1]
+        let arr   = searchFor.split('.')
+        let last  = arr[arr.length - 1]
         let regex = ''
 
         for (const item of arr) {
@@ -263,11 +263,11 @@ export const PACKAGE_NAME = 'laravelGotoLang'
 let config: any = ''
 export let methods: any = ''
 let defaultPath: string = ''
-let vendorPath: any = []
+let vendorPath: any     = []
 
 export function readConfig() {
-    config = workspace.getConfiguration(PACKAGE_NAME)
-    methods = config.methods.map((e) => escapeStringRegexp(e)).join('|')
+    config      = workspace.getConfiguration(PACKAGE_NAME)
+    methods     = config.methods.map((e) => escapeStringRegexp(e)).join('|')
     defaultPath = config.defaultPath
-    vendorPath = config.vendorPath
+    vendorPath  = config.vendorPath
 }
