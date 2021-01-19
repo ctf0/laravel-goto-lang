@@ -26,21 +26,20 @@ export default class LinkProvider implements DocumentLinkProvider {
 
             /* -------------------------------------------------------------------------- */
 
-            const reg_sngl   = new RegExp(`(?<=(${this.methods})\\()'([^$]*?)'`, 'g')
-            const reg_dbl    = new RegExp(`(?<=(${this.methods})\\()"([^$]*?)"`, 'g')
+            const reg_sngl   = new RegExp(`(?<=(${this.methods})\\()'([^$*]*?)'`, 'g')
+            const reg_dbl    = new RegExp(`(?<=(${this.methods})\\()"([^$*]*?)"`, 'g')
             let sngl_matches = [...text.matchAll(reg_sngl)]
             let dbl_matches  = [...text.matchAll(reg_dbl)]
 
             for (const match of dbl_matches.concat(sngl_matches)) {
-                let found = match[0]
-                let files = await util.getFilePaths(found)
+                let found   = match[0]
+                let files   = await util.getFilePaths(found)
+                const range = doc.getWordRangeAtPosition(
+                    doc.positionAt(match.index),
+                    reg_sngl
+                )
 
-                if (files.length) {
-                    const range = doc.getWordRangeAtPosition(
-                        doc.positionAt(match.index),
-                        reg_sngl
-                    )
-
+                if (files.length && range) {
                     for (const file of files) {
                         let documentlink     = new DocumentLink(range, file.fileUri)
                         documentlink.tooltip = file.tooltip

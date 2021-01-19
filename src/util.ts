@@ -27,7 +27,12 @@ export function setWs(uri) {
 let cache_store = []
 
 export async function getFilePaths(text) {
-    text        = text.replace(/(^['"]|['"]$)/g, '')
+    text = text.replace(/(^['"]|['"]$)/g, '')
+
+    if (text.endsWith('.')) {
+        return []
+    }
+
     let fullKey = text
     let list    = checkCache(cache_store, fullKey)
 

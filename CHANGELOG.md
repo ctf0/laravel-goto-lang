@@ -84,3 +84,8 @@
 ## 0.2.2
 
 - add cacheing, subsequent calls will load instantly, using `showValueOnHover` should be slightly quicker now
+
+## 0.2.5
+
+- fix range is undefined
+- fix hl keys that ends with `.`
