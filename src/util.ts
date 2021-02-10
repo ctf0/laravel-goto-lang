@@ -12,6 +12,7 @@ import {
 
 const glob               = require('fast-glob')
 const path               = require('path')
+const sep                = path.sep
 const pascalcase         = require('pascalcase')
 const exec               = require('await-exec')
 const escapeStringRegexp = require('escape-string-regexp')
@@ -54,15 +55,15 @@ export async function getFilePaths(text) {
                             fullKey
                         )
                     })
-                    .concat(await getData(`${internal}/vendor/${vendor}`, key, fullKey))
+                    .concat(await getData(`${internal}${sep}vendor${sep}${vendor}`, key, fullKey))
             )
 
             list = list.flat()
-
-            saveCache(cache_store, fullKey, list)
         } else {
             list = await getData(internal, text, fullKey)
+        }
 
+        if (list.length) {
             saveCache(cache_store, fullKey, list)
         }
     }
@@ -93,7 +94,7 @@ async function phpFilePattern(path, editor, list, fullKey) {
 
     let toCheck = []
     while (list.length > 0) {
-        toCheck.push(`**/${list.join('/')}.php`)
+        toCheck.push(`**/${list.join(sep)}.php`)
         list.pop()
     }
 
@@ -102,12 +103,12 @@ async function phpFilePattern(path, editor, list, fullKey) {
 
     for (const file of result) {
         let val = await getLangValue(file, fullKey)
-        let url = getDocFullPath(path, false) + `/${file}`
+        let url = getDocFullPath(path, false) + `${sep}${file}`
 
         data.push({
             tooltip : val ? `${val} (${url})` : url,
             fileUri : Uri
-                .parse(`${editor}${path}/${file}`)
+                .parse(`${editor}${path}${sep}${file}`)
                 .with({authority: 'ctf0.laravel-goto-lang', query: info})
         })
     }
@@ -121,12 +122,12 @@ async function jsonFilePattern(path, editor, key, fullKey) {
 
     for (const file of result) {
         let val = await getLangValue(file, fullKey)
-        let url = getDocFullPath(path, false) + `/${file}`
+        let url = getDocFullPath(path, false) + `${sep}${file}`
 
         data.push({
             tooltip : val ? `${val} (${url})` : url,
             fileUri : Uri
-                .parse(`${editor}${path}/${file}`)
+                .parse(`${editor}${path}${sep}${file}`)
                 .with({authority: 'ctf0.laravel-goto-lang', query: key, fragment: 'json'})
         })
     }
@@ -137,7 +138,7 @@ async function jsonFilePattern(path, editor, key, fullKey) {
 function getDocFullPath(path, add = true) {
     return add
         ? path.replace('$base', ws)
-        : path.replace(`${ws}/`, '')
+        : path.replace(`${ws}${sep}`, '')
 }
 
 /* Tinker ------------------------------------------------------------------- */
