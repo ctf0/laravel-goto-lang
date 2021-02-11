@@ -36,7 +36,7 @@ export default class LinkProvider implements DocumentLinkProvider {
                 let files   = await util.getFilePaths(found)
                 const range = doc.getWordRangeAtPosition(
                     doc.positionAt(match.index),
-                    reg_sngl
+                    new RegExp(found)
                 )
 
                 if (files.length && range) {

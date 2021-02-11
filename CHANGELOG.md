@@ -93,3 +93,8 @@
 ## 0.2.6
 
 - fix wrong path seperator for windows
+
+## 0.2.7
+
+- remove `$base` from config as its redundant
+- fix not hl dbl quotes keys

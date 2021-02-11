@@ -137,7 +137,7 @@ async function jsonFilePattern(path, editor, key, fullKey) {
 
 function getDocFullPath(path, add = true) {
     return add
-        ? path.replace('$base', ws)
+        ? `${ws}${path}`.replace(/[\\\/]/g, sep)
         : path.replace(`${ws}${sep}`, '')
 }
 

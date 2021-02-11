@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.2.6",
+    "version": "0.2.7",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.52.0"
@@ -56,20 +56,20 @@
                 },
                 "laravelGotoLang.defaultPath": {
                     "type": "string",
-                    "default": "$base/resources/lang",
-                    "markdownDescription": "laravel default lang path ($base == [base_path()](https://laravel.com/docs/8.x/helpers#method-base-path))"
+                    "default": "/resources/lang",
+                    "markdownDescription": "laravel default language path from app root"
                 },
                 "laravelGotoLang.vendorPath": {
                     "type": "array",
                     "default": [
-                        "$base/Modules/*/Resources/lang"
+                        "/Modules/*/Resources/lang"
                     ],
                     "items": {
                         "type": "string"
                     },
                     "minItems": 1,
                     "uniqueItems": true,
-                    "markdownDescription": "where to look for the lang files\n\n(* will be replaced by [namespace](https://laravel.com/docs/8.x/packages#views))\n\n($base == [base_path()](https://laravel.com/docs/8.x/helpers#method-base-path))"
+                    "markdownDescription": "where to look for the language files path from app root\n\n(* will be replaced by [namespace](https://laravel.com/docs/8.x/packages#views))"
                 }
             }
         }
