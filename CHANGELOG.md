@@ -98,3 +98,7 @@
 
 - remove `$base` from config as its redundant
 - fix not hl dbl quotes keys
+
+## 0.2.8
+
+- fix a long running issue of https://github.com/microsoft/vscode/issues/113328

@@ -109,7 +109,7 @@ async function phpFilePattern(path, editor, list, fullKey) {
             tooltip : val ? `${val} (${url})` : url,
             fileUri : Uri
                 .parse(`${editor}${path}${sep}${file}`)
-                .with({authority: 'ctf0.laravel-goto-lang', query: info})
+                .with({authority: 'ctf0.laravel-goto-lang', query: encodeURI(info)})
         })
     }
 
@@ -128,7 +128,7 @@ async function jsonFilePattern(path, editor, key, fullKey) {
             tooltip : val ? `${val} (${url})` : url,
             fileUri : Uri
                 .parse(`${editor}${path}${sep}${file}`)
-                .with({authority: 'ctf0.laravel-goto-lang', query: key, fragment: 'json'})
+                .with({authority: 'ctf0.laravel-goto-lang', query: encodeURI(key), fragment: 'json'})
         })
     }
 
@@ -185,6 +185,7 @@ export function scrollToText() {
     window.registerUriHandler({
         handleUri(provider) {
             let {authority, path, query, fragment} = provider
+            query                                  = decodeURI(query)
 
             if (authority == 'ctf0.laravel-goto-lang') {
                 commands.executeCommand('vscode.openFolder', Uri.file(path))
