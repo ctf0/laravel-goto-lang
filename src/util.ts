@@ -154,7 +154,7 @@ async function getLangValue(file, fullKey) {
 
         if (!list || !list.length) {
             try {
-                let res = await exec(`php artisan tinker --execute="echo ${key}"`, {
+                let res = await exec(`${phpCommand} tinker --execute="echo ${key}"`, {
                     cwd   : ws,
                     shell : env.shell
                 })
@@ -270,11 +270,13 @@ export const PACKAGE_NAME = 'laravelGotoLang'
 let config: any = ''
 export let methods: any = ''
 let defaultPath: string = ''
-let vendorPath: any     = []
+let vendorPath: any = []
+let phpCommand: string = ''
 
 export function readConfig() {
     config      = workspace.getConfiguration(PACKAGE_NAME)
     methods     = config.methods.map((e) => escapeStringRegexp(e)).join('|')
     defaultPath = config.defaultPath
-    vendorPath  = config.vendorPath
+    vendorPath = config.vendorPath
+    phpCommand = config.phpCommand
 }

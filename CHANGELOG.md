@@ -102,3 +102,7 @@
 ## 0.2.8
 
 - fix a long running issue of https://github.com/microsoft/vscode/issues/113328
+
+## 0.2.9
+
+- make php dynamic

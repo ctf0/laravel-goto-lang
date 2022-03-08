@@ -1,10 +1,10 @@
 'use strict'
 
 import {languages, window, workspace} from 'vscode'
-import LinkProvider                   from './providers/linkProvider'
-import * as util                      from './util'
+import LinkProvider from './providers/linkProvider'
+import * as util from './util'
+import { debounce } from 'lodash'
 
-const debounce = require('lodash.debounce')
 let providers  = []
 
 export function activate() {
