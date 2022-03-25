@@ -188,7 +188,7 @@ export function scrollToText() {
             query                                  = decodeURI(query)
 
             if (authority == 'ctf0.laravel-goto-lang') {
-                commands.executeCommand('vscode.openFolder', Uri.file(path))
+                commands.executeCommand('vscode.open', Uri.file(path))
                     .then(() => {
                         setTimeout(() => {
                             let editor = window.activeTextEditor

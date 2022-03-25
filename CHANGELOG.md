@@ -106,3 +106,7 @@
 ## 0.2.9
 
 - make php dynamic
+
+## 0.3.0
+
+- use the correct file opening command
