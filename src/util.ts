@@ -104,16 +104,24 @@ async function phpFilePattern(path, editor, list, fullKey) {
     for (const file of result) {
         let val = await getLangValue(file, fullKey)
         let url = getDocFullPath(path, false) + `${sep}${file}`
+        let normalizedPath = editor + normalizePath(`${path}${sep}${file}`)
 
         data.push({
             tooltip : val ? `${val} (${url})` : url,
             fileUri : Uri
-                .parse(`${editor}${path}${sep}${file}`)
+                .parse(normalizedPath)
                 .with({authority: 'ctf0.laravel-goto-lang', query: encodeURI(info)})
         })
     }
 
     return data
+}
+
+function normalizePath(path)
+{
+    return path
+            .replace(/\/+/g, '/')
+            .replace(/\+/g, '\\')
 }
 
 async function jsonFilePattern(path, editor, key, fullKey) {
@@ -123,11 +131,12 @@ async function jsonFilePattern(path, editor, key, fullKey) {
     for (const file of result) {
         let val = await getLangValue(file, fullKey)
         let url = getDocFullPath(path, false) + `${sep}${file}`
+        let normalizedPath = editor + normalizePath(`${path}${sep}${file}`)
 
         data.push({
             tooltip : val ? `${val} (${url})` : url,
             fileUri : Uri
-                .parse(`${editor}${path}${sep}${file}`)
+                .parse(normalizedPath)
                 .with({authority: 'ctf0.laravel-goto-lang', query: encodeURI(key), fragment: 'json'})
         })
     }
