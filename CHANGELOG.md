@@ -114,3 +114,7 @@
 ## 0.3.1
 
 - make sure path separators are normalized
+
+## 0.3.2
+
+- make sure path separator are aligned with os

@@ -7,6 +7,7 @@ import {
     window
 } from 'vscode'
 import * as util from '../util'
+import escapeStringRegexp from 'escape-string-regexp';
 
 export default class LinkProvider implements DocumentLinkProvider {
     methods
@@ -36,7 +37,7 @@ export default class LinkProvider implements DocumentLinkProvider {
                 let files   = await util.getFilePaths(found)
                 const range = doc.getWordRangeAtPosition(
                     doc.positionAt(match.index),
-                    new RegExp(found)
+                    new RegExp(escapeStringRegexp(found))
                 )
 
                 if (files.length && range) {

@@ -10,12 +10,13 @@ import {
     workspace
 } from 'vscode'
 
-const glob               = require('fast-glob')
-const path               = require('path')
-const sep                = path.sep
-const pascalcase         = require('pascalcase')
-const exec               = require('await-exec')
-const escapeStringRegexp = require('escape-string-regexp')
+import { pascalcase } from 'pascalcase';
+import escapeStringRegexp from 'escape-string-regexp';
+
+const glob = require('fast-glob')
+const path = require('path')
+const sep = path.sep
+const exec = require('await-exec')
 
 let ws
 
@@ -214,7 +215,11 @@ export function scrollToText() {
                                     ...['Copy']
                                 ).then((e) => {
                                     if (e) {
-                                        env.clipboard.writeText(`'${query}' => `)
+                                        env.clipboard.writeText(
+                                            fragment
+                                                ? query
+                                                : `'${query}' => `
+                                        )
                                     }
                                 })
                             }
@@ -230,7 +235,7 @@ function getTextPosition(searchFor, doc, isJson) {
     let match
 
     if (isJson || searchFor.includes(' ')) {
-        match = new RegExp(`['"]${searchFor}['"].*:`).exec(txt)
+        match = new RegExp(`['"]${escapeStringRegexp(searchFor)}['"].*:`).exec(txt)
     } else if (searchFor.includes('.')) {
         let arr   = searchFor.split('.')
         let last  = arr[arr.length - 1]
@@ -244,7 +249,7 @@ function getTextPosition(searchFor, doc, isJson) {
 
         match = new RegExp(regex).exec(txt)
     } else {
-        match = new RegExp(`['"]${searchFor}['"].*=>`).exec(txt)
+        match = new RegExp(`['"]${escapeStringRegexp(searchFor)}['"].*=>`).exec(txt)
     }
 
 
