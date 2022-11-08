@@ -118,3 +118,10 @@
 ## 0.3.2
 
 - make sure path separator are aligned with os
+
+## 0.4.0
+
+- fix link popup not being clickable
+- use a cmnd instead of the uri handler
+- remove tinker cmnd support and instead load the lang files data in memory, much quicker and loading happens only once project wide
+- plz update ur `laravelGotoLang.phpCommand` to end with `php` only

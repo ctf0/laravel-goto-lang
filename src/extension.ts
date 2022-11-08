@@ -1,13 +1,13 @@
 'use strict'
 
-import {languages, window, workspace} from 'vscode'
+import {languages, window, workspace, commands} from 'vscode'
 import LinkProvider from './providers/linkProvider'
 import * as util from './util'
 import { debounce } from 'lodash'
 
 let providers  = []
 
-export function activate() {
+export function activate({subscriptions}) {
     util.readConfig()
 
     // config
@@ -25,7 +25,7 @@ export function activate() {
     })
 
     // scroll
-    util.scrollToText()
+    subscriptions.push(commands.registerCommand(util.cmndName, util.scrollToText))
 }
 
 function clearAll() {

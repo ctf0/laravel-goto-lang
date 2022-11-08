@@ -2,10 +2,10 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.3.2",
+    "version": "0.4.0",
     "publisher": "ctf0",
     "engines": {
-        "vscode": "^1.52.0"
+        "vscode": "^1.68.0"
     },
     "repository": "https://github.com/ctf0/laravel-goto-lang",
     "icon": "images/logo.png",
@@ -25,6 +25,13 @@
         "onStartupFinished"
     ],
     "contributes": {
+        "commands": [
+            {
+                "command": "lgl.openFile",
+                "title": "lgl: open file",
+                "when": "false"
+            }
+        ],
         "configuration": {
             "type": "object",
             "title": "Laravel Goto Lang",
@@ -46,8 +53,8 @@
                 },
                 "laravelGotoLang.showValueOnHover": {
                     "type": "boolean",
-                    "default": false,
-                    "markdownDescription": "show key value on hover (approx 1-sec for each key to be resolved)"
+                    "default": true,
+                    "markdownDescription": "show key value on hover"
                 },
                 "laravelGotoLang.waitB4Scroll": {
                     "type": "integer",
@@ -61,7 +68,7 @@
                 },
                 "laravelGotoLang.phpCommand": {
                     "type": "string",
-                    "default": "php artisan",
+                    "default": "php",
                     "description": "the php command to use for running tinker (any quotes needs to be escaped)"
                 },
                 "laravelGotoLang.vendorPath": {
@@ -91,15 +98,15 @@
     "devDependencies": {
         "@types/glob": "^8.0.0",
         "@types/node": "^18.11.9",
-        "@types/vscode": "^1.52.0",
+        "@types/vscode": "^1.68.0",
         "esbuild": "^0.15.13",
-        "tslint": "^5.20.1",
         "typescript": "^4.8.4"
     },
     "dependencies": {
         "await-exec": "^0.1.2",
         "escape-string-regexp": "^5.0.0",
         "fast-glob": "^3.2.12",
+        "fs-extra": "^10.1.0",
         "lodash": "^4.17.21",
         "pascalcase": "^2.0.0"
     }

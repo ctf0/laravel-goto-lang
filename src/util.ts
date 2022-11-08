@@ -9,10 +9,13 @@ import {
     window,
     workspace
 } from 'vscode'
-
 import { pascalcase } from 'pascalcase';
 import escapeStringRegexp from 'escape-string-regexp';
 
+export const cmndName = 'lgl.openFile'
+const scheme = `command:${cmndName}`
+
+const fs = require('fs-extra')
 const glob = require('fast-glob')
 const path = require('path')
 const sep = path.sep
@@ -74,22 +77,21 @@ export async function getFilePaths(text) {
 
 async function getData(path, key, fullKey) {
     let result
-    let editor = `${env.uriScheme}://file`
 
     if (!key.includes(' ')) {
         let fileList = key.split('.')
 
         result = fileList.length > 1
-            ? await phpFilePattern(path, editor, fileList, fullKey)
-            : await jsonFilePattern(path, editor, key, fullKey)
+            ? await phpFilePattern(path, fileList, fullKey)
+            : await jsonFilePattern(path, key, fullKey)
     } else {
-        result = await jsonFilePattern(path, editor, key, fullKey)
+        result = await jsonFilePattern(path, key, fullKey)
     }
 
     return result
 }
 
-async function phpFilePattern(path, editor, list, fullKey) {
+async function phpFilePattern(path, list, fullKey) {
     let info = list.slice(1).join('.')
     list.pop()
 
@@ -103,19 +105,45 @@ async function phpFilePattern(path, editor, list, fullKey) {
     let data   = []
 
     for (const file of result) {
-        let val = await getLangValue(file, fullKey)
-        let url = getDocFullPath(path, false) + `${sep}${file}`
-        let normalizedPath = editor + normalizePath(`${path}${sep}${file}`)
+        let sepFile = `${sep}${file}`
+        let fullPath = normalizePath(`${path}${sep}${file}`)
+        let url = getDocFullPath(path, false) + `${sepFile}`
+
+        let val = await getLangValue(fullPath, info, url, false)
+        let args = prepareArgs({ path: fullPath, query: encodeURI(info) });
 
         data.push({
             tooltip : val ? `${val} (${url})` : url,
-            fileUri : Uri
-                .parse(normalizedPath)
-                .with({authority: 'ctf0.laravel-goto-lang', query: encodeURI(info)})
+            fileUri : Uri.parse(`${scheme}?${args}`)
         })
     }
 
     return data
+}
+
+async function jsonFilePattern(path, key, fullKey) {
+    let result = await glob('*.json', {cwd: path})
+    let data   = []
+
+    for (const file of result) {
+        let sepFile = `${sep}${file}`
+        let fullPath = normalizePath(`${path}${sepFile}`)
+        let url = getDocFullPath(path, false) + `${sepFile}`
+
+        let val = await getLangValue(fullPath, fullKey, url, true)
+        let args = prepareArgs({ path: fullPath, query: encodeURI(key), fragment: 'json' });
+
+        data.push({
+            tooltip : val ? `${val} (${url})` : url,
+            fileUri : Uri.parse(`${scheme}?${args}`)
+        })
+    }
+
+    return data
+}
+
+function prepareArgs(args: object){
+    return encodeURIComponent(JSON.stringify([args]));
 }
 
 function normalizePath(path)
@@ -125,26 +153,6 @@ function normalizePath(path)
             .replace(/\+/g, '\\')
 }
 
-async function jsonFilePattern(path, editor, key, fullKey) {
-    let result = await glob('*.json', {cwd: path})
-    let data   = []
-
-    for (const file of result) {
-        let val = await getLangValue(file, fullKey)
-        let url = getDocFullPath(path, false) + `${sep}${file}`
-        let normalizedPath = editor + normalizePath(`${path}${sep}${file}`)
-
-        data.push({
-            tooltip : val ? `${val} (${url})` : url,
-            fileUri : Uri
-                .parse(normalizedPath)
-                .with({authority: 'ctf0.laravel-goto-lang', query: encodeURI(key), fragment: 'json'})
-        })
-    }
-
-    return data
-}
-
 function getDocFullPath(path, add = true) {
     return add
         ? `${ws}${path}`.replace(/[\\\/]/g, sep)
@@ -152,89 +160,92 @@ function getDocFullPath(path, add = true) {
 }
 
 /* Tinker ------------------------------------------------------------------- */
-let counter            = 1
 let cache_store_tinker = []
 
-async function getLangValue(file, fullKey) {
+async function getLangValue(filePath, key_text, cache_key, isJson = false) {
     if (config.showValueOnHover) {
-        let timer
-        let locale = path.parse(file).name
-        let key    = `trans('${fullKey}', [], '${locale}')`
-        let list   = checkCache(cache_store_tinker, key)
+        let val = ''
+        let cacheData = cache_store_tinker.find((file) => file.name == cache_key)
 
-        if (!list || !list.length) {
+        if (cacheData) {
+            val = cacheData.dataList[key_text]
+        }
+
+        if (!val) {
             try {
-                let res = await exec(`${phpCommand} tinker --execute="echo ${key}"`, {
-                    cwd   : ws,
-                    shell : env.shell
-                })
+                let fileData = ''
 
-                list = res.stdout.replace(/<.*/, '').trim().replace(/['"]/g, '')
+                if (isJson) {
+                    fileData = await fs.readJson(filePath)
+                } else {
+                    let res = await exec(`${config.phpCommand} -r 'print json_encode(include("${filePath}"));'`, {
+                        cwd   : ws,
+                        shell : env.shell
+                    })
 
-                saveCache(cache_store_tinker, key, list)
-            } catch (error) {
-                // console.error(error)
-
-                if (counter >= 3) {
-                    return clearTimeout(timer)
+                    fileData = JSON.parse(res.stdout)
                 }
 
-                timer = setTimeout(() => {
-                    counter++
-                    getLangValue(file, fullKey)
-                }, 2000)
+                if (cacheData) {
+                    cacheData.dataList = fileData
+                } else {
+                    cache_store_tinker.push({
+                        name: cache_key,
+                        dataList: fileData
+                    })
+                }
+
+                val = fileData[key_text]
+            } catch (error) {
+                // console.error(error)
             }
         }
 
-        return list
+        return val
     }
 }
 
 /* Scroll ------------------------------------------------------------------- */
-export function scrollToText() {
-    window.registerUriHandler({
-        handleUri(provider) {
-            let {authority, path, query, fragment} = provider
-            query                                  = decodeURI(query)
+export function scrollToText(args) {
+    if (args !== undefined) {
+        let {path, query, fragment} = args
+        query = decodeURI(query)
 
-            if (authority == 'ctf0.laravel-goto-lang') {
-                commands.executeCommand('vscode.open', Uri.file(path))
-                    .then(() => {
-                        setTimeout(() => {
-                            let editor = window.activeTextEditor
-                            let range  = getTextPosition(query, editor.document, fragment)
+        commands.executeCommand('vscode.open', Uri.file(path))
+            .then(() => {
+                setTimeout(() => {
+                    let editor = window.activeTextEditor
+                    let range  = getTextPosition(query, editor.document, fragment)
 
-                            if (range) {
-                                editor.selection = new Selection(range.start, range.end)
-                                editor.revealRange(range, 1)
+                    if (range) {
+                        editor.selection = new Selection(range.start, range.end)
+                        editor.revealRange(range, 1)
+                    }
+
+                    if (!range && query) {
+                        window.showInformationMessage(
+                            'Laravel Goto Lang: Copy Key Name To Clipboard',
+                            ...['Copy']
+                        ).then((e) => {
+                            if (e) {
+                                env.clipboard.writeText(
+                                    fragment !== undefined
+                                        ? query
+                                        : `'${query}' => `
+                                )
                             }
-
-                            if (!range && query) {
-                                window.showInformationMessage(
-                                    'Laravel Goto Lang: Copy Key Name To Clipboard',
-                                    ...['Copy']
-                                ).then((e) => {
-                                    if (e) {
-                                        env.clipboard.writeText(
-                                            fragment
-                                                ? query
-                                                : `'${query}' => `
-                                        )
-                                    }
-                                })
-                            }
-                        }, config.waitB4Scroll)
-                    })
-            }
-        }
-    })
+                        })
+                    }
+                }, config.waitB4Scroll)
+            })
+    }
 }
 
 function getTextPosition(searchFor, doc, isJson) {
     let txt = doc.getText()
     let match
 
-    if (isJson || searchFor.includes(' ')) {
+    if (isJson !== undefined || searchFor.includes(' ')) {
         match = new RegExp(`['"]${escapeStringRegexp(searchFor)}['"].*:`).exec(txt)
     } else if (searchFor.includes('.')) {
         let arr   = searchFor.split('.')
@@ -281,16 +292,14 @@ function saveCache(cache_store, text, val) {
 
 /* Config ------------------------------------------------------------------- */
 export const PACKAGE_NAME = 'laravelGotoLang'
-let config: any = ''
 export let methods: any = ''
+let config: any = ''
 let defaultPath: string = ''
 let vendorPath: any = []
-let phpCommand: string = ''
 
 export function readConfig() {
     config      = workspace.getConfiguration(PACKAGE_NAME)
     methods     = config.methods.map((e) => escapeStringRegexp(e)).join('|')
     defaultPath = config.defaultPath
     vendorPath = config.vendorPath
-    phpCommand = config.phpCommand
 }
