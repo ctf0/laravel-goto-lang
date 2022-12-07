@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.4.5",
+    "version": "0.4.6",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.68.0"
@@ -83,18 +83,17 @@
         "watch": "npm run vscode:prepublish"
     },
     "devDependencies": {
-        "@types/glob": "^8.0.0",
         "@types/node": "^18.11.9",
         "@types/vscode": "^1.68.0",
         "esbuild": "^0.15.13",
         "typescript": "^4.8.4"
     },
     "dependencies": {
-        "await-exec": "^0.1.2",
         "escape-string-regexp": "^5.0.0",
+        "execa": "^6.1.0",
         "fast-glob": "^3.2.12",
         "fs-extra": "^10.1.0",
-        "lodash": "^4.17.21",
+        "lodash.debounce": "^4.0.8",
         "pascalcase": "^2.0.0"
     },
     "extensionDependencies": [
