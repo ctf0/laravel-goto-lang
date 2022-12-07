@@ -1,16 +1,18 @@
 'use strict'
 
+import escapeStringRegexp from 'escape-string-regexp';
+import { pascalcase } from 'pascalcase';
 import {
     commands,
+    DocumentSymbol,
     env,
     Range,
     Selection,
+    TextEditorRevealType,
     Uri,
     window,
     workspace
-} from 'vscode'
-import { pascalcase } from 'pascalcase';
-import escapeStringRegexp from 'escape-string-regexp';
+} from 'vscode';
 
 export const cmndName = 'lgl.openFile'
 const scheme = `command:${cmndName}`
@@ -39,16 +41,16 @@ export async function getFilePaths(text) {
     }
 
     let fullKey = text
-    let list    = checkCache(cache_store, fullKey)
+    let list = checkCache(cache_store, fullKey)
 
     if (!list.length) {
         let internal = getDocFullPath(defaultPath)
-        let char     = '::'
+        let char = '::'
 
         if (text.includes(char)) {
-            text       = text.split(char)
+            text = text.split(char)
             let vendor = text[0]
-            let key    = text[1]
+            let key = text[1]
 
             list = await Promise.all(
                 vendorPath
@@ -82,7 +84,7 @@ async function getData(path, key, fullKey) {
         let fileList = key.split('.')
 
         result = fileList.length > 1
-            ? await phpFilePattern(path, fileList, fullKey)
+            ? await phpFilePattern(path, fileList)
             : await jsonFilePattern(path, key, fullKey)
     } else {
         result = await jsonFilePattern(path, key, fullKey)
@@ -91,18 +93,18 @@ async function getData(path, key, fullKey) {
     return result
 }
 
-async function phpFilePattern(path, list, fullKey) {
-    let info = list.slice(1).join('.')
-    list.pop()
+async function phpFilePattern(path, fileList) {
+    let info = fileList.slice(1).join('.')
+    fileList.pop()
 
     let toCheck = []
-    while (list.length > 0) {
-        toCheck.push(`**/${list.join(sep)}.php`)
-        list.pop()
+    while (fileList.length > 0) {
+        toCheck.push(`**/${fileList.join(sep)}.php`)
+        fileList.pop()
     }
 
-    let result = await glob(toCheck, {cwd: path})
-    let data   = []
+    let result = await glob(toCheck, { cwd: path })
+    let data = []
 
     for (const file of result) {
         let sepFile = `${sep}${file}`
@@ -113,8 +115,8 @@ async function phpFilePattern(path, list, fullKey) {
         let args = prepareArgs({ path: fullPath, query: encodeURI(info) });
 
         data.push({
-            tooltip : val ? `${val} (${url})` : url,
-            fileUri : Uri.parse(`${scheme}?${args}`)
+            tooltip: val ? `${val} (${url})` : url,
+            fileUri: Uri.parse(`${scheme}?${args}`)
         })
     }
 
@@ -122,8 +124,8 @@ async function phpFilePattern(path, list, fullKey) {
 }
 
 async function jsonFilePattern(path, key, fullKey) {
-    let result = await glob('*.json', {cwd: path})
-    let data   = []
+    let result = await glob('*.json', { cwd: path })
+    let data = []
 
     for (const file of result) {
         let sepFile = `${sep}${file}`
@@ -134,23 +136,22 @@ async function jsonFilePattern(path, key, fullKey) {
         let args = prepareArgs({ path: fullPath, query: encodeURI(key), fragment: 'json' });
 
         data.push({
-            tooltip : val ? `${val} (${url})` : url,
-            fileUri : Uri.parse(`${scheme}?${args}`)
+            tooltip: val ? `${val} (${url})` : url,
+            fileUri: Uri.parse(`${scheme}?${args}`)
         })
     }
 
     return data
 }
 
-function prepareArgs(args: object){
+function prepareArgs(args: object) {
     return encodeURIComponent(JSON.stringify([args]));
 }
 
-function normalizePath(path)
-{
+function normalizePath(path) {
     return path
-            .replace(/\/+/g, '/')
-            .replace(/\+/g, '\\')
+        .replace(/\/+/g, '/')
+        .replace(/\+/g, '\\')
 }
 
 function getDocFullPath(path, add = true) {
@@ -159,13 +160,13 @@ function getDocFullPath(path, add = true) {
         : path.replace(`${ws}${sep}`, '')
 }
 
-/* Tinker ------------------------------------------------------------------- */
-let cache_store_tinker = []
+/* Lang Values ------------------------------------------------------------------- */
+let cache_store_lang_keys = []
 
 async function getLangValue(filePath, key_text, cache_key, isJson = false) {
     if (config.showValueOnHover) {
         let val = ''
-        let cacheData = cache_store_tinker.find((file) => file.name == cache_key)
+        let cacheData = cache_store_lang_keys.find((file) => file.name == cache_key)
 
         if (cacheData) {
             val = cacheData.dataList[key_text]
@@ -179,8 +180,8 @@ async function getLangValue(filePath, key_text, cache_key, isJson = false) {
                     fileData = await fs.readJson(filePath)
                 } else {
                     let res = await exec(`${config.phpCommand} -r 'print json_encode(include("${filePath}"));'`, {
-                        cwd   : ws,
-                        shell : env.shell
+                        cwd: ws,
+                        shell: env.shell
                     })
 
                     fileData = JSON.parse(res.stdout)
@@ -189,7 +190,7 @@ async function getLangValue(filePath, key_text, cache_key, isJson = false) {
                 if (cacheData) {
                     cacheData.dataList = fileData
                 } else {
-                    cache_store_tinker.push({
+                    cache_store_lang_keys.push({
                         name: cache_key,
                         dataList: fileData
                     })
@@ -208,66 +209,68 @@ async function getLangValue(filePath, key_text, cache_key, isJson = false) {
 /* Scroll ------------------------------------------------------------------- */
 export function scrollToText(args) {
     if (args !== undefined) {
-        let {path, query, fragment} = args
+        let { path, query, fragment } = args
         query = decodeURI(query)
 
         commands.executeCommand('vscode.open', Uri.file(path))
-            .then(() => {
-                setTimeout(() => {
-                    let editor = window.activeTextEditor
-                    let range  = getTextPosition(query, editor.document, fragment)
+            .then(async () => {
+                let editor = window.activeTextEditor
+                let range: Range = await getTextPosition(query, editor.document, fragment)
 
-                    if (range) {
-                        editor.selection = new Selection(range.start, range.end)
-                        editor.revealRange(range, 1)
-                    }
+                if (range) {
+                    editor.selection = new Selection(range.start, range.end)
+                    editor.revealRange(range, TextEditorRevealType.InCenter)
+                }
 
-                    if (!range && query) {
-                        window.showInformationMessage(
-                            'Laravel Goto Lang: Copy Key Name To Clipboard',
-                            ...['Copy']
-                        ).then((e) => {
-                            if (e) {
-                                env.clipboard.writeText(
-                                    fragment !== undefined
-                                        ? query
-                                        : `'${query}' => `
-                                )
-                            }
-                        })
-                    }
-                }, config.waitB4Scroll)
+                if (!range && query) {
+                    window.showInformationMessage(
+                        'Laravel Goto Lang: Copy Key Name To Clipboard',
+                        ...['Copy']
+                    ).then((e) => {
+                        if (e) {
+                            env.clipboard.writeText(
+                                fragment !== undefined
+                                    ? query
+                                    : `'${query}' => `
+                            )
+                        }
+                    })
+                }
             })
     }
 }
 
-function getTextPosition(searchFor, doc, isJson) {
-    let txt = doc.getText()
-    let match
+async function getTextPosition(query, document, isJson) {
+    let symbols: DocumentSymbol[] = await commands.executeCommand("vscode.executeDocumentSymbolProvider", document.uri)
 
-    if (isJson !== undefined || searchFor.includes(' ')) {
-        match = new RegExp(`['"]${escapeStringRegexp(searchFor)}['"].*:`).exec(txt)
-    } else if (searchFor.includes('.')) {
-        let arr   = searchFor.split('.')
-        let last  = arr[arr.length - 1]
-        let regex = ''
+    if (query.includes('.') && isJson === undefined) {
+        query = query.split('.')
 
-        for (const item of arr) {
-            regex += item == last
-                ? `${item}.*=>`
-                : `['"]${item}.*\\[([\\S\\s]*?)`
+        if (query.length > 1) {
+            return getRange(symbols, query)
+        } else {
         }
-
-        match = new RegExp(regex).exec(txt)
-    } else {
-        match = new RegExp(`['"]${escapeStringRegexp(searchFor)}['"].*=>`).exec(txt)
     }
 
+    return symbols.find((symbol) => symbol.name == query)?.location.range
+}
 
-    if (match) {
-        let pos = doc.positionAt(match.index + match[0].length)
+function getRange(symbolsList: Array<any>, keysArray: string[]): any {
+    let key: any = null
 
-        return new Range(pos, pos)
+    while (keysArray.length) {
+        key = keysArray.shift()
+        let node = symbolsList.find((symbol: any) => symbol.name === key)
+
+        if (node) {
+            if (node.children && keysArray.length) {
+                return getRange(node.children, keysArray)
+            }
+
+            return node.location.range
+        }
+
+        break
     }
 }
 
@@ -283,8 +286,8 @@ function saveCache(cache_store, text, val) {
     checkCache(cache_store, text).length
         ? false
         : cache_store.push({
-            key : text,
-            val : val
+            key: text,
+            val: val
         })
 
     return val
@@ -298,8 +301,8 @@ let defaultPath: string = ''
 let vendorPath: any = []
 
 export function readConfig() {
-    config      = workspace.getConfiguration(PACKAGE_NAME)
-    methods     = config.methods.map((e) => escapeStringRegexp(e)).join('|')
+    config = workspace.getConfiguration(PACKAGE_NAME)
+    methods = config.methods.map((e) => escapeStringRegexp(e)).join('|')
     defaultPath = config.defaultPath
     vendorPath = config.vendorPath
 }

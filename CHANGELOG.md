@@ -125,3 +125,9 @@
 - use a cmnd instead of the uri handler
 - remove tinker cmnd support and instead load the lang files data in memory, much quicker and loading happens only once project wide
 - plz update ur `laravelGotoLang.phpCommand` to end with `php` only
+
+## 0.4.5
+
+- remove `waitB4Scroll`
+- use symbol provider to correctly navigate to key
+- update rdme

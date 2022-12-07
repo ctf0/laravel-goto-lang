@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.4.1",
+    "version": "0.4.5",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.68.0"
@@ -49,11 +49,6 @@
                     "default": true,
                     "markdownDescription": "show key value on hover"
                 },
-                "laravelGotoLang.waitB4Scroll": {
-                    "type": "integer",
-                    "default": 1000,
-                    "description": "time to wait until doc is ready to be searched (big files might need longer delay)"
-                },
                 "laravelGotoLang.defaultPath": {
                     "type": "string",
                     "default": "/resources/lang",
@@ -62,7 +57,7 @@
                 "laravelGotoLang.phpCommand": {
                     "type": "string",
                     "default": "php",
-                    "description": "the php command to use for running tinker (any quotes needs to be escaped)"
+                    "description": "the php command to read php lang files data (any quotes needs to be escaped)"
                 },
                 "laravelGotoLang.vendorPath": {
                     "type": "array",
@@ -85,8 +80,7 @@
         "esbuild-base": "esbuild ./src/extension.ts --bundle --outfile=out/main.js --external:vscode --format=cjs --platform=node",
         "esbuild": "npm run esbuild-base -- --sourcemap",
         "esbuild-watch": "npm run esbuild-base -- --sourcemap --watch",
-        "watch": "npm run vscode:prepublish",
-        "test-compile": "tsc -p ./"
+        "watch": "npm run vscode:prepublish"
     },
     "devDependencies": {
         "@types/glob": "^8.0.0",
@@ -102,5 +96,8 @@
         "fs-extra": "^10.1.0",
         "lodash": "^4.17.21",
         "pascalcase": "^2.0.0"
-    }
+    },
+    "extensionDependencies": [
+        "ctf0.php-array-symbols"
+    ]
 }
