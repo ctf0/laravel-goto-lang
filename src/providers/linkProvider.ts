@@ -26,16 +26,17 @@ export default class LinkProvider implements DocumentLinkProvider {
             const links = [];
 
             /* -------------------------------------------------------------------------- */
-            const reg_sngl = new RegExp(`(?<=(${this.methods})\\()'([\\w\. ]+)'`, 'g');
-            const reg_dbl = new RegExp(`(?<=(${this.methods})\\()"([\\w\. ]+)"`, 'g');
+            // because keys could have single quotes in it
+            const reg_sngl = new RegExp(`(?<=(${this.methods})\\()'([\\w\." ]+)'`, 'g');
+            const reg_dbl = new RegExp(`(?<=(${this.methods})\\()"([\\w\.' ]+)"`, 'g');
             const sngl_matches = [...text.matchAll(reg_sngl)];
             const dbl_matches = [...text.matchAll(reg_dbl)];
 
             for (const match of dbl_matches.concat(sngl_matches)) {
-                const found = match[0];
+                const found = match[2];
                 const files = await util.getFilePaths(found);
                 const range = doc.getWordRangeAtPosition(
-                    doc.positionAt(match.index),
+                    doc.positionAt(match.index + found.length),
                     new RegExp(escapeStringRegexp(found)),
                 );
 

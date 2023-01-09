@@ -7,13 +7,14 @@ import * as fs from 'fs-extra';
 import * as path from 'node:path';
 import { pascalcase } from 'pascalcase';
 import {
-    commands,
     DocumentSymbol,
-    env,
     Range,
     Selection,
     TextEditorRevealType,
     Uri,
+    WorkspaceConfiguration,
+    commands,
+    env,
     window,
     workspace,
 } from 'vscode';
@@ -294,8 +295,8 @@ function saveCache(cache_store, text, val) {
 
 /* Config ------------------------------------------------------------------- */
 export const PACKAGE_NAME = 'laravelGotoLang';
-export let methods: any = '';
-let config: any = '';
+export let methods = '';
+let config: WorkspaceConfiguration;
 
 export function readConfig() {
     config = workspace.getConfiguration(PACKAGE_NAME);
