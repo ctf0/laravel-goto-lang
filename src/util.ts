@@ -1,5 +1,3 @@
-'use strict';
-
 import escapeStringRegexp from 'escape-string-regexp';
 import { execaCommand } from 'execa';
 import glob from 'fast-glob';
@@ -22,6 +20,8 @@ import {
 const sep = path.sep;
 export const CMND_NAME = 'lgl.openFile';
 const SCHEME = `command:${CMND_NAME}`;
+const PKG_LABEL = 'Laravel Goto';
+const outputChannel = window.createOutputChannel(PKG_LABEL, 'log');
 
 let ws;
 
@@ -199,6 +199,10 @@ async function getLangValue(filePath, key_text, cache_key, isJson = false) {
                 val = fileData[key_text];
             } catch (error) {
                 // console.error(error)
+
+                outputChannel.clear();
+                outputChannel.appendLine(error.message);
+                outputChannel.show();
             }
         }
 

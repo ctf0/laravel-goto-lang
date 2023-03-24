@@ -1,5 +1,3 @@
-'use strict';
-
 import debounce from 'lodash.debounce';
 import { commands, languages, window, workspace } from 'vscode';
 import LinkProvider from './providers/linkProvider';

@@ -131,3 +131,7 @@
 - remove `waitB4Scroll`
 - use symbol provider to correctly navigate to key
 - update rdme
+
+## 0.4.8
+
+- show output panel when phpcommand fails
