@@ -20,7 +20,7 @@ import {
 const sep = path.sep;
 export const CMND_NAME = 'lgl.openFile';
 const SCHEME = `command:${CMND_NAME}`;
-const PKG_LABEL = 'Laravel Goto';
+const PKG_LABEL = 'Laravel Goto Lang';
 const outputChannel = window.createOutputChannel(PKG_LABEL, 'log');
 
 let ws;
@@ -228,7 +228,7 @@ export function scrollToText(args) {
 
                 if (!range && query) {
                     window.showInformationMessage(
-                        'Laravel Goto Lang: Copy Key Name To Clipboard',
+                        `${PKG_LABEL}: Copy Key Name To Clipboard`,
                         ...['Copy'],
                     ).then((e) => {
                         if (e) {
