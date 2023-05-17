@@ -200,9 +200,8 @@ async function getLangValue(filePath, key_text, cache_key, isJson = false) {
             } catch (error) {
                 // console.error(error)
 
-                outputChannel.clear();
-                outputChannel.appendLine(error.message);
-                outputChannel.show();
+                outputChannel.replace(error.message);
+                // outputChannel.show();
             }
         }
 

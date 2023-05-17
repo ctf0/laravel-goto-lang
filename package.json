@@ -2,7 +2,7 @@
     "name": "laravel-goto-lang",
     "displayName": "Laravel Goto Lang",
     "description": "Quick jump to lang",
-    "version": "0.4.9",
+    "version": "0.5.0",
     "publisher": "ctf0",
     "engines": {
         "vscode": "^1.68.0"
