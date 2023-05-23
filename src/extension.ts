@@ -7,23 +7,23 @@ let providers = [];
 
 export function activate({ subscriptions }) {
     util.readConfig();
-
-    // config
-    workspace.onDidChangeConfiguration(async (e) => {
-        if (e.affectsConfiguration(util.PACKAGE_NAME)) {
-            util.readConfig();
-        }
-    });
-
-    // links
     initProviders();
-    window.onDidChangeActiveTextEditor(async (e) => {
-        await clearAll();
-        initProviders();
-    });
 
-    // scroll
-    subscriptions.push(commands.registerCommand(util.CMND_NAME, util.scrollToText));
+    subscriptions.push(
+        // links
+        window.onDidChangeActiveTextEditor(async (e) => {
+            await clearAll();
+            initProviders();
+        }),
+        // config
+        workspace.onDidChangeConfiguration(async (e) => {
+            if (e.affectsConfiguration(util.PACKAGE_NAME)) {
+                util.readConfig();
+            }
+        }),
+        // scroll
+        commands.registerCommand(util.CMND_NAME, util.scrollToText),
+    );
 }
 
 function clearAll() {
